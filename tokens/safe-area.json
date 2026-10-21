@@ -1,0 +1,63 @@
+{
+  "safe-area": {
+    "top": {
+      "home-button": {
+        "$type": "dimension",
+        "$value": "20px",
+        "$description": "iPhone SE 2·3"
+      },
+      "notch-44": {
+        "$type": "dimension",
+        "$value": "44px",
+        "$description": "iPhone X·XS·11 Pro"
+      },
+      "notch-47": {
+        "$type": "dimension",
+        "$value": "47px",
+        "$description": "iPhone 12·13·14·16e·14 Plus"
+      },
+      "notch-48": {
+        "$type": "dimension",
+        "$value": "48px",
+        "$description": "iPhone XR·11"
+      },
+      "notch-50": {
+        "$type": "dimension",
+        "$value": "50px",
+        "$description": "iPhone 12·13 mini"
+      },
+      "dynamic-island-59": {
+        "$type": "dimension",
+        "$value": "59px",
+        "$description": "iPhone 14 Pro~16, 15·16 Plus·Pro Max"
+      },
+      "dynamic-island-62": {
+        "$type": "dimension",
+        "$value": "62px",
+        "$description": "iPhone 16 Pro·17·17 Pro·Pro Max"
+      },
+      "air-68": {
+        "$type": "dimension",
+        "$value": "68px",
+        "$description": "iPhone Air (값 확인 필요)"
+      },
+      "android-status": {
+        "$type": "dimension",
+        "$value": "24px",
+        "$description": "Android 상태바 참고값(런타임 WindowInsets 우선)"
+      }
+    },
+    "bottom": {
+      "home-indicator": {
+        "$type": "dimension",
+        "$value": "34px",
+        "$description": "Face ID 전 기종"
+      },
+      "android-gesture": {
+        "$type": "dimension",
+        "$value": "24px",
+        "$description": "Android 제스처 바 참고값(런타임 WindowInsets 우선)"
+      }
+    }
+  }
+}

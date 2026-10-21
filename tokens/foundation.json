@@ -1,0 +1,183 @@
+{
+  "spacing": {
+    "margin": {
+      "m-4": {
+        "$type": "dimension",
+        "$value": "4px"
+      },
+      "m-8": {
+        "$type": "dimension",
+        "$value": "8px"
+      },
+      "m-12": {
+        "$type": "dimension",
+        "$value": "12px"
+      },
+      "m-16": {
+        "$type": "dimension",
+        "$value": "16px"
+      },
+      "m-20": {
+        "$type": "dimension",
+        "$value": "20px"
+      },
+      "m-24": {
+        "$type": "dimension",
+        "$value": "24px"
+      }
+    },
+    "padding": {
+      "p-4": {
+        "$type": "dimension",
+        "$value": "4px"
+      },
+      "p-8": {
+        "$type": "dimension",
+        "$value": "8px"
+      },
+      "p-12": {
+        "$type": "dimension",
+        "$value": "12px"
+      },
+      "p-16": {
+        "$type": "dimension",
+        "$value": "16px"
+      },
+      "p-20": {
+        "$type": "dimension",
+        "$value": "20px"
+      },
+      "p-24": {
+        "$type": "dimension",
+        "$value": "24px"
+      }
+    }
+  },
+  "radius": {
+    "r-4": {
+      "$type": "dimension",
+      "$value": "4px"
+    },
+    "r-8": {
+      "$type": "dimension",
+      "$value": "8px"
+    },
+    "r-12": {
+      "$type": "dimension",
+      "$value": "12px"
+    },
+    "r-16": {
+      "$type": "dimension",
+      "$value": "16px"
+    },
+    "r-20": {
+      "$type": "dimension",
+      "$value": "20px"
+    },
+    "r-24": {
+      "$type": "dimension",
+      "$value": "24px"
+    }
+  },
+  "opacity": {
+    "o-5": {
+      "$type": "number",
+      "$value": 0.05,
+      "$description": "5%"
+    },
+    "o-10": {
+      "$type": "number",
+      "$value": 0.1,
+      "$description": "10%"
+    },
+    "o-20": {
+      "$type": "number",
+      "$value": 0.2,
+      "$description": "20%"
+    },
+    "o-30": {
+      "$type": "number",
+      "$value": 0.3,
+      "$description": "30%"
+    },
+    "o-40": {
+      "$type": "number",
+      "$value": 0.4,
+      "$description": "40%"
+    },
+    "o-50": {
+      "$type": "number",
+      "$value": 0.5,
+      "$description": "50%"
+    },
+    "o-60": {
+      "$type": "number",
+      "$value": 0.6,
+      "$description": "60%"
+    },
+    "o-70": {
+      "$type": "number",
+      "$value": 0.7,
+      "$description": "70%"
+    },
+    "o-80": {
+      "$type": "number",
+      "$value": 0.8,
+      "$description": "80%"
+    },
+    "o-90": {
+      "$type": "number",
+      "$value": 0.9,
+      "$description": "90%"
+    }
+  },
+  "state": {
+    "pressed": {
+      "$type": "number",
+      "$value": "{opacity.o-10}",
+      "$description": "요소 위 오버레이 10% (light: ink-900 / dark: white) · color.interaction.pressed"
+    },
+    "active": {
+      "$type": "number",
+      "$value": "{opacity.o-5}",
+      "$description": "선택 항목 배경 오버레이 5% · color.interaction.active"
+    },
+    "disabled": {
+      "$type": "number",
+      "$value": "{opacity.o-40}",
+      "$description": "요소 전체 opacity 40%, 터치 비활성"
+    },
+    "dimmed": {
+      "$type": "number",
+      "$value": "{opacity.o-50}",
+      "$description": "모달·시트 뒤 scrim (light 50% / dark 70%) · color.material.dimmer"
+    }
+  },
+  "breakpoint": {
+    "compact": {
+      "$type": "dimension",
+      "$value": "360px",
+      "$description": "Android 소형 360dp"
+    },
+    "base": {
+      "$type": "dimension",
+      "$value": "375px",
+      "$description": "설계 기준 · iPhone SE·mini"
+    },
+    "regular": {
+      "$type": "dimension",
+      "$value": "393px",
+      "$description": "iPhone 12~17·Air (390~420)"
+    },
+    "large": {
+      "$type": "dimension",
+      "$value": "430px",
+      "$description": "Plus·Pro Max (428~440) · iPhone Duo 외부(추정 466)"
+    },
+    "expanded": {
+      "$type": "dimension",
+      "$value": "600px",
+      "$description": "폴더블 펼침 · iPhone Duo 내부(추정 626) → 2단 레이아웃"
+    }
+  }
+}

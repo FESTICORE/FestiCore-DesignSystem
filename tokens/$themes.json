@@ -1,0 +1,26 @@
+[
+  {
+    "id": "light",
+    "name": "Light",
+    "selectedTokenSets": {
+      "color/atomic": "source",
+      "color/semantic.light": "enabled",
+      "foundation": "enabled",
+      "typography": "enabled",
+      "gradient": "enabled",
+      "safe-area": "enabled"
+    }
+  },
+  {
+    "id": "dark",
+    "name": "Dark",
+    "selectedTokenSets": {
+      "color/atomic": "source",
+      "color/semantic.dark": "enabled",
+      "foundation": "enabled",
+      "typography": "enabled",
+      "gradient": "enabled",
+      "safe-area": "enabled"
+    }
+  }
+]

@@ -1,0 +1,100 @@
+{
+  "gradient": {
+    "light": {
+      "bottom-cta": {
+        "$type": "gradient",
+        "$value": [
+          {
+            "color": "#F6F6F100",
+            "position": 0
+          },
+          {
+            "color": "#F6F6F1",
+            "position": 0.35
+          },
+          {
+            "color": "#F6F6F1",
+            "position": 1
+          }
+        ],
+        "$description": "하단 고정 버튼 뒤 · 위→아래 · 높이 120~140"
+      },
+      "scroll-fade-top": {
+        "$type": "gradient",
+        "$value": [
+          {
+            "color": "#F6F6F1",
+            "position": 0
+          },
+          {
+            "color": "#F6F6F100",
+            "position": 1
+          }
+        ],
+        "$description": "스크롤 상단 · 위→아래 · 높이 24~40"
+      },
+      "scroll-fade-bottom": {
+        "$type": "gradient",
+        "$value": [
+          {
+            "color": "#F6F6F100",
+            "position": 0
+          },
+          {
+            "color": "#F6F6F1",
+            "position": 1
+          }
+        ],
+        "$description": "스크롤 하단 · 위→아래 · 높이 24~40"
+      }
+    },
+    "dark": {
+      "bottom-cta": {
+        "$type": "gradient",
+        "$value": [
+          {
+            "color": "#11111300",
+            "position": 0
+          },
+          {
+            "color": "#111113",
+            "position": 0.35
+          },
+          {
+            "color": "#111113",
+            "position": 1
+          }
+        ],
+        "$description": "하단 고정 버튼 뒤 · 위→아래 · 높이 120~140"
+      },
+      "scroll-fade-top": {
+        "$type": "gradient",
+        "$value": [
+          {
+            "color": "#111113",
+            "position": 0
+          },
+          {
+            "color": "#11111300",
+            "position": 1
+          }
+        ],
+        "$description": "스크롤 상단 · 위→아래 · 높이 24~40"
+      },
+      "scroll-fade-bottom": {
+        "$type": "gradient",
+        "$value": [
+          {
+            "color": "#11111300",
+            "position": 0
+          },
+          {
+            "color": "#111113",
+            "position": 1
+          }
+        ],
+        "$description": "스크롤 하단 · 위→아래 · 높이 24~40"
+      }
+    }
+  }
+}

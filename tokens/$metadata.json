@@ -1,0 +1,11 @@
+{
+  "tokenSetOrder": [
+    "color/atomic",
+    "color/semantic.light",
+    "color/semantic.dark",
+    "foundation",
+    "typography",
+    "gradient",
+    "safe-area"
+  ]
+}
