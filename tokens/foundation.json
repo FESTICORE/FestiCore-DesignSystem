@@ -144,8 +144,8 @@
     },
     "disabled": {
       "$type": "number",
-      "$value": "{opacity.o-40}",
-      "$description": "요소 전체 opacity 40%, 터치 비활성"
+      "$value": "{opacity.o-30}",
+      "$description": "요소 전체 opacity 30%, 터치 비활성"
     },
     "dimmed": {
       "$type": "number",
