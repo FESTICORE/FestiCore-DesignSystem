@@ -106,6 +106,14 @@
       "black": {
         "$type": "color",
         "$value": "{color.atomic.common.black}"
+      },
+      "lime": {
+        "$type": "color",
+        "$value": "{color.atomic.lime.500}"
+      },
+      "ink": {
+        "$type": "color",
+        "$value": "{color.atomic.ink.900}"
       }
     },
     "inverse": {
