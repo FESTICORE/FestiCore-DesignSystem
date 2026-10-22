@@ -66,8 +66,11 @@ test('light/dark Swift color extensions are deterministic without assets', () =>
       assert.match(content, /Created by FestiCore-DesignSystem generator\./);
     }
     assert.match(uiColor, /public extension UIColor/);
-    assert.match(uiColor, /static var primaryNormal: UIColor/);
+    assert.match(uiColor, /static let primaryNormal = UIColor \{ traits in/);
     assert.match(uiColor, /traits\.userInterfaceStyle == \.dark/);
+    assert.match(uiColor, /UIColor\.festiCore\(hex: 0x[0-9A-F]{6}/);
+    assert.match(uiColor, /UIColor\.festiCore\(hex: 0x3D7BFF, alpha: 0x1A\)/);
+    assert.match(uiColor, /static let staticWhite = UIColor\.festiCore\(hex: 0xFFFFFF\)/);
     assert.match(color, /public extension Color/);
     assert.match(color, /static var primaryNormal: Color \{ Color\(uiColor: UIColor\.primaryNormal\) \}/);
     assert.match(shape, /public extension ShapeStyle where Self == Color/);
@@ -78,7 +81,7 @@ test('light/dark Swift color extensions are deterministic without assets', () =>
     assert.match(typography, /fontFamily: baseFontFamily/);
     const names = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
     for (const symbol of names) {
-      assert.match(uiColor, new RegExp(`static var ${symbol}: UIColor \\{`));
+      assert.match(uiColor, new RegExp(`static let ${symbol} = UIColor(?: \\{|\\.festiCore\\()`));
       assert.match(color, new RegExp(`static var ${symbol}: Color \\{ Color\\(uiColor: UIColor\\.${symbol}\\) \\}`));
       assert.match(shape, new RegExp(`static var ${symbol}: Color \\{ Color\\.${symbol} \\}`));
     }

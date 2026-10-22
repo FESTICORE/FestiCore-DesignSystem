@@ -1,5 +1,9 @@
 # 변경 이력
 
+## 2026-10-22 — UIColor 코드 정리
+
+- UIKit 색상은 DDD와 같은 `static let` 및 hex 코드 형식으로 생성합니다. Light/Dark 전환과 반투명 alpha는 그대로 적용합니다.
+
 ## 2026-10-22 — iOS 컬러 코드 생성
 
 - FestiCore의 light/dark semantic 토큰을 `UIColor`, SwiftUI `Color`, `ShapeStyle` 확장으로 생성합니다. 화면은 semantic 이름을 코드에서 직접 사용합니다.

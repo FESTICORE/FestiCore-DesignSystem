@@ -165,10 +165,11 @@ function dimension(value, label) {
   return number(Number(value.slice(0, -2)), label);
 }
 function format(value) { return Number(value.toFixed(10)).toString(); }
-function rgba(value, label) {
+function hexColor(value, label) {
   if (typeof value !== 'string' || !/^#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?$/.test(value)) fail(`Invalid hex color: ${label}`);
-  const hex = value.slice(1);
-  return [0, 2, 4].map(i => format(parseInt(hex.slice(i, i + 2), 16) / 255)).concat(format(hex.length === 8 ? parseInt(hex.slice(6, 8), 16) / 255 : 1));
+  const hex = value.slice(1).toUpperCase();
+  const alpha = hex.length === 8 ? `, alpha: 0x${hex.slice(6, 8)}` : '';
+  return `UIColor.festiCore(hex: 0x${hex.slice(0, 6)}${alpha})`;
 }
 function collectOutput(outputs, relative, content) {
   outputs.set(relative, content);
@@ -203,12 +204,28 @@ function generateColors(light, dark, names, outputs) {
     const symbol = swiftName(name, 'color');
     const lightHex = light.resolved.get(name), darkHex = dark.resolved.get(name);
     if (light.all.get(name).$type !== 'color' || dark.all.get(name).$type !== 'color') fail(`Invalid color type: ${name}`);
-    const l = rgba(lightHex, name), d = rgba(darkHex, name);
-    uiLines.push(`  static var ${symbol}: UIColor {`, '    UIColor { traits in', `      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (${d.join(', ')}) : (${l.join(', ')})`, '      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)', '    }', '  }', '');
+    const l = hexColor(lightHex, name), d = hexColor(darkHex, name);
+    if (lightHex.toUpperCase() === darkHex.toUpperCase()) {
+      uiLines.push(`  static let ${symbol} = ${l}`, '');
+    } else {
+      uiLines.push(`  static let ${symbol} = UIColor { traits in`, `    traits.userInterfaceStyle == .dark ? ${d} : ${l}`, '  }', '');
+    }
     colorLines.push(`  static var ${symbol}: Color { Color(uiColor: UIColor.${symbol}) }`);
     shapeLines.push(`  static var ${symbol}: Color { Color.${symbol} }`);
   }
-  uiLines.push('}', '');
+  uiLines.push(
+    '}', '',
+    'private extension UIColor {',
+    '  static func festiCore(hex: UInt32, alpha: UInt8 = 0xFF) -> UIColor {',
+    '    UIColor(',
+    '      red: CGFloat((hex >> 16) & 0xFF) / 255,',
+    '      green: CGFloat((hex >> 8) & 0xFF) / 255,',
+    '      blue: CGFloat(hex & 0xFF) / 255,',
+    '      alpha: CGFloat(alpha) / 255',
+    '    )',
+    '  }',
+    '}', ''
+  );
   colorLines.push('}', '');
   shapeLines.push('}', '');
   collectOutput(outputs, 'Sources/UIColors.swift', uiLines.join('\n'));

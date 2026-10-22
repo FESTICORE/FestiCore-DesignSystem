@@ -53,6 +53,7 @@ Figma에서 값을 고친 뒤 이 저장소의 JSON을 갱신하고 생성물을
 
 | 날짜 | 버전 | 내용 |
 | --- | --- | --- |
+| 2026-10-22 | UIColor 코드 정리 | DDD 방식의 `static let`과 hex 값으로 UIKit 색상 코드를 단순화. Light/Dark 동적 색상과 alpha 유지 |
 | 2026-10-22 | iOS 코드 컬러 | FestiCore semantic light/dark 색을 `UIColor`·`Color`·`ShapeStyle` 확장 코드로 생성. `FestiCoreColor` enum과 색상 `.xcassets` 제거, `FestiCoreDesignKit`의 `Sources/Token`으로 동기화. 생성 실패 시 기존 산출물 보존 |
 | 2026-10-22 | iOS 토큰 자동화 | DTCG 테마·별칭·타입 검증, semantic color·spacing·radius·typography Swift 생성과 CI 생성물 일치 검사 |
 | 2026-10-22 | 0.2.0 | 배경 Paper 삭제 → Mist로 통일, 100단계 색 밝게 조정, Ink 400 추가(다크 Label/Assistive), 다크 Fill 반투명화 + Fill/Selected, 다크 Accent Background를 500의 10% 틴트로, Static Alpha(Black·White 20~80)·Material/Glass·Static/Purple Tint 추가, Margin m-2·m-6 추가, 그라디언트 라이트 배경색 Mist로 |
