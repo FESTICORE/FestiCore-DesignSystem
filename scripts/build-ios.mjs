@@ -170,10 +170,8 @@ function rgba(value, label) {
   const hex = value.slice(1);
   return [0, 2, 4].map(i => format(parseInt(hex.slice(i, i + 2), 16) / 255)).concat(format(hex.length === 8 ? parseInt(hex.slice(6, 8), 16) / 255 : 1));
 }
-function write(relative, content) {
-  const dest = path.join(outputRoot, relative);
-  fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.writeFileSync(dest, content);
+function collectOutput(outputs, relative, content) {
+  outputs.set(relative, content);
 }
 function swiftHeader(filename) {
   return [
@@ -197,7 +195,7 @@ function clearGeneratedOutput() {
   if (current && !current.isDirectory()) fail('Unsafe output root: expected directory');
   fs.rmSync(outputRoot, { recursive: true, force: true });
 }
-function generateColors(light, dark, names) {
+function generateColors(light, dark, names, outputs) {
   const uiLines = [...swiftHeader('UIColors.swift'), 'import UIKit', '', 'public extension UIColor {'];
   const colorLines = [...swiftHeader('Colors.swift'), 'import SwiftUI', '', 'public extension Color {'];
   const shapeLines = [...swiftHeader('ShapeStyle+.swift'), 'import SwiftUI', '', 'public extension ShapeStyle where Self == Color {'];
@@ -213,11 +211,11 @@ function generateColors(light, dark, names) {
   uiLines.push('}', '');
   colorLines.push('}', '');
   shapeLines.push('}', '');
-  write('Sources/UIColors.swift', uiLines.join('\n'));
-  write('Sources/Colors.swift', colorLines.join('\n'));
-  write('Sources/ShapeStyle+.swift', shapeLines.join('\n'));
+  collectOutput(outputs, 'Sources/UIColors.swift', uiLines.join('\n'));
+  collectOutput(outputs, 'Sources/Colors.swift', colorLines.join('\n'));
+  collectOutput(outputs, 'Sources/ShapeStyle+.swift', shapeLines.join('\n'));
 }
-function generateLayout(light, spacing, radius) {
+function generateLayout(light, spacing, radius, outputs) {
   const lines = [...swiftHeader('FestiCoreLayout.swift'), 'import CoreGraphics', '', 'public enum FestiCoreSpacing {'];
   for (const name of spacing) {
     if (light.all.get(name).$type !== 'dimension') fail(`Invalid spacing type: ${name}`);
@@ -229,9 +227,9 @@ function generateLayout(light, spacing, radius) {
     lines.push(`  public static let ${swiftName(name, 'radius')}: CGFloat = ${format(dimension(light.resolved.get(name), name))}`);
   }
   lines.push('}', '');
-  write('Sources/FestiCoreLayout.swift', lines.join('\n'));
+  collectOutput(outputs, 'Sources/FestiCoreLayout.swift', lines.join('\n'));
 }
-function generateTypography(light, names) {
+function generateTypography(light, names, outputs) {
   const lines = [...swiftHeader('FestiCoreTypography.swift'), 'import UIKit', '', 'public struct FestiCoreTextStyle {',
     '  public let size: CGFloat', '  public let weight: UIFont.Weight', '  public let lineHeight: CGFloat', '  public let letterSpacing: CGFloat', '  public let fontFamily: String', '',
     '  public var font: UIFont { UIFont.systemFont(ofSize: size, weight: weight) }', '  public var lineSpacing: CGFloat { max(0, size * lineHeight - font.lineHeight) }', '',
@@ -261,7 +259,7 @@ function generateTypography(light, names) {
     lines.push(`  public static let ${swiftName(name, 'text-style')} = FestiCoreTextStyle(size: ${format(size)}, weight: .${enumWeight}, lineHeight: ${format(height)}, letterSpacing: ${format(kern)}, fontFamily: ${familyGroup}FontFamily)`);
   }
   lines.push('}', '');
-  write('Sources/FestiCoreTypography.swift', lines.join('\n'));
+  collectOutput(outputs, 'Sources/FestiCoreTypography.swift', lines.join('\n'));
 }
 export async function buildIOS() {
   if (process.env.FESTICORE_OUTPUT_ROOT) fail('FESTICORE_OUTPUT_ROOT is not supported');
@@ -284,10 +282,16 @@ export async function buildIOS() {
   for (const [group, names] of [['color',colors],['spacing',spacing],['radius',radius],['text-style',typography]]) assertNames(names, group, group);
   const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
   if (JSON.stringify(colors.map(name => swiftName(name, 'color')).sort()) !== JSON.stringify(snapshot)) fail('Public color names differ from iOS API snapshot');
+  const outputs = new Map();
+  generateColors(light, dark, colors, outputs);
+  generateLayout(light, spacing, radius, outputs);
+  generateTypography(light, typography, outputs);
   clearGeneratedOutput();
-  generateColors(light, dark, colors);
-  generateLayout(light, spacing, radius);
-  generateTypography(light, typography);
+  for (const [relative, content] of outputs) {
+    const dest = path.join(outputRoot, relative);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.writeFileSync(dest, content);
+  }
   return { colors: colors.length, spacing: spacing.length, radius: radius.length, typography: typography.length };
 }
 if (process.argv[1] && fs.realpathSync(path.resolve(process.argv[1])) === fs.realpathSync(fileURLToPath(import.meta.url))) {

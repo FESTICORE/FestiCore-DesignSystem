@@ -29,6 +29,18 @@ function edit(f, filename, change) {
   fs.writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`);
 }
 function cleanup(f) { fs.rmSync(f.dir, { recursive: true, force: true }); }
+function snapshot(directory) {
+  const files = new Map();
+  function visit(current, relative = '') {
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const name = path.join(relative, entry.name);
+      if (entry.isDirectory()) visit(path.join(current, entry.name), name);
+      else files.set(name, fs.readFileSync(path.join(current, entry.name)));
+    }
+  }
+  visit(directory);
+  return files;
+}
 function expectFailure(change, message) {
   const f = fixture();
   try {
@@ -128,6 +140,21 @@ test('invalid units, output names and enabled atomic colors fail', () => {
     for (const theme of ['light','dark']) edit(f, `color/semantic.${theme}.json`, json => { delete json.color.primary.onPrimary; });
     edit(f, '$themes.json', json => { for (const theme of json) theme.selectedTokenSets['color/atomic'] = 'enabled'; });
     assert.match(run(f).stderr, /Atomic color is enabled/);
+  } finally { cleanup(f); }
+});
+
+test('invalid typography leaves the previous generated output unchanged', () => {
+  const f = fixture();
+  try {
+    const first = run(f);
+    assert.equal(first.status, 0, first.stderr);
+    fs.writeFileSync(path.join(f.output, 'keep.txt'), 'keep');
+    const before = snapshot(f.output);
+    edit(f, 'typography.json', json => { json['text-style'].base.body.regular.$value.letterSpacing = '2%'; });
+    const invalid = run(f);
+    assert.notEqual(invalid.status, 0);
+    assert.match(invalid.stderr, /Invalid letter spacing/);
+    assert.deepEqual(snapshot(f.output), before);
   } finally { cleanup(f); }
 });
 
