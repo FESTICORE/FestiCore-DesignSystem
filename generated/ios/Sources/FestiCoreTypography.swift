@@ -1,4 +1,10 @@
-// Generated from FestiCore-DesignSystem tokens. Do not edit.
+//
+//  FestiCoreTypography.swift
+//  FestiCoreDesignKit
+//
+//  Created by FestiCore-DesignSystem generator.
+//
+
 import UIKit
 
 public struct FestiCoreTextStyle {
@@ -23,7 +29,7 @@ public struct FestiCoreTextStyle {
 @MainActor public enum FestiCoreTypography {
   public static let baseFontFamily = "Pretendard"
   public static let pointFontFamily = "Bagel Fat One"
-  // Font files are not bundled. The system font is used until licensed assets are provided.
+  // 폰트 파일을 포함하기 전까지 시스템 폰트를 사용한다.
   public static let baseBodyBold = FestiCoreTextStyle(size: 17, weight: .bold, lineHeight: 1.529, letterSpacing: 0, fontFamily: baseFontFamily)
   public static let baseBodyMedium = FestiCoreTextStyle(size: 17, weight: .medium, lineHeight: 1.529, letterSpacing: 0, fontFamily: baseFontFamily)
   public static let baseBodyRegular = FestiCoreTextStyle(size: 17, weight: .regular, lineHeight: 1.529, letterSpacing: 0, fontFamily: baseFontFamily)

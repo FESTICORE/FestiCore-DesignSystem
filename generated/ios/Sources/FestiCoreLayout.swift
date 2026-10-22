@@ -1,4 +1,10 @@
-// Generated from FestiCore-DesignSystem tokens. Do not edit.
+//
+//  FestiCoreLayout.swift
+//  FestiCoreDesignKit
+//
+//  Created by FestiCore-DesignSystem generator.
+//
+
 import CoreGraphics
 
 public enum FestiCoreSpacing {

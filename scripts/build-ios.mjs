@@ -170,10 +170,19 @@ function rgba(value, label) {
   const hex = value.slice(1);
   return [0, 2, 4].map(i => format(parseInt(hex.slice(i, i + 2), 16) / 255)).concat(format(hex.length === 8 ? parseInt(hex.slice(6, 8), 16) / 255 : 1));
 }
-function write(relative, content) {
-  const dest = path.join(outputRoot, relative);
-  fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.writeFileSync(dest, content);
+function collectOutput(outputs, relative, content) {
+  outputs.set(relative, content);
+}
+function swiftHeader(filename) {
+  return [
+    '//',
+    `//  ${filename}`,
+    '//  FestiCoreDesignKit',
+    '//',
+    '//  Created by FestiCore-DesignSystem generator.',
+    '//',
+    '',
+  ];
 }
 function clearGeneratedOutput() {
   if (process.env.FESTICORE_OUTPUT_ROOT) fail('FESTICORE_OUTPUT_ROOT is not supported');
@@ -186,26 +195,28 @@ function clearGeneratedOutput() {
   if (current && !current.isDirectory()) fail('Unsafe output root: expected directory');
   fs.rmSync(outputRoot, { recursive: true, force: true });
 }
-function generateColors(light, dark, names) {
-  const lines = ['// Generated from FestiCore-DesignSystem tokens. Do not edit.', 'import UIKit', '', 'public enum FestiCoreColor {'];
+function generateColors(light, dark, names, outputs) {
+  const uiLines = [...swiftHeader('UIColors.swift'), 'import UIKit', '', 'public extension UIColor {'];
+  const colorLines = [...swiftHeader('Colors.swift'), 'import SwiftUI', '', 'public extension Color {'];
+  const shapeLines = [...swiftHeader('ShapeStyle+.swift'), 'import SwiftUI', '', 'public extension ShapeStyle where Self == Color {'];
   for (const name of names) {
     const symbol = swiftName(name, 'color');
     const lightHex = light.resolved.get(name), darkHex = dark.resolved.get(name);
     if (light.all.get(name).$type !== 'color' || dark.all.get(name).$type !== 'color') fail(`Invalid color type: ${name}`);
     const l = rgba(lightHex, name), d = rgba(darkHex, name);
-    lines.push(`  public static var ${symbol}: UIColor {`, '    UIColor { traits in', `      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (${d.join(', ')}) : (${l.join(', ')})`, '      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)', '    }', '  }', '');
-    const asset = { colors: [
-      { color: { 'color-space': 'srgb', components: Object.fromEntries(['red','green','blue','alpha'].map((key, i) => [key, l[i]])) }, idiom: 'universal' },
-      { appearances: [{ appearance: 'luminosity', value: 'dark' }], color: { 'color-space': 'srgb', components: Object.fromEntries(['red','green','blue','alpha'].map((key, i) => [key, d[i]])) }, idiom: 'universal' }
-    ], info: { author: 'xcode', version: 1 } };
-    write(`Assets/FestiCoreColors.xcassets/${symbol}.colorset/Contents.json`, `${JSON.stringify(asset, null, 2)}\n`);
+    uiLines.push(`  static var ${symbol}: UIColor {`, '    UIColor { traits in', `      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (${d.join(', ')}) : (${l.join(', ')})`, '      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)', '    }', '  }', '');
+    colorLines.push(`  static var ${symbol}: Color { Color(uiColor: UIColor.${symbol}) }`);
+    shapeLines.push(`  static var ${symbol}: Color { Color.${symbol} }`);
   }
-  lines.push('}', '');
-  write('Sources/FestiCoreColor.swift', lines.join('\n'));
-  write('Assets/FestiCoreColors.xcassets/Contents.json', `${JSON.stringify({info:{author:'xcode',version:1}},null,2)}\n`);
+  uiLines.push('}', '');
+  colorLines.push('}', '');
+  shapeLines.push('}', '');
+  collectOutput(outputs, 'Sources/UIColors.swift', uiLines.join('\n'));
+  collectOutput(outputs, 'Sources/Colors.swift', colorLines.join('\n'));
+  collectOutput(outputs, 'Sources/ShapeStyle+.swift', shapeLines.join('\n'));
 }
-function generateLayout(light, spacing, radius) {
-  const lines = ['// Generated from FestiCore-DesignSystem tokens. Do not edit.', 'import CoreGraphics', '', 'public enum FestiCoreSpacing {'];
+function generateLayout(light, spacing, radius, outputs) {
+  const lines = [...swiftHeader('FestiCoreLayout.swift'), 'import CoreGraphics', '', 'public enum FestiCoreSpacing {'];
   for (const name of spacing) {
     if (light.all.get(name).$type !== 'dimension') fail(`Invalid spacing type: ${name}`);
     lines.push(`  public static let ${swiftName(name, 'spacing')}: CGFloat = ${format(dimension(light.resolved.get(name), name))}`);
@@ -216,10 +227,10 @@ function generateLayout(light, spacing, radius) {
     lines.push(`  public static let ${swiftName(name, 'radius')}: CGFloat = ${format(dimension(light.resolved.get(name), name))}`);
   }
   lines.push('}', '');
-  write('Sources/FestiCoreLayout.swift', lines.join('\n'));
+  collectOutput(outputs, 'Sources/FestiCoreLayout.swift', lines.join('\n'));
 }
-function generateTypography(light, names) {
-  const lines = ['// Generated from FestiCore-DesignSystem tokens. Do not edit.', 'import UIKit', '', 'public struct FestiCoreTextStyle {',
+function generateTypography(light, names, outputs) {
+  const lines = [...swiftHeader('FestiCoreTypography.swift'), 'import UIKit', '', 'public struct FestiCoreTextStyle {',
     '  public let size: CGFloat', '  public let weight: UIFont.Weight', '  public let lineHeight: CGFloat', '  public let letterSpacing: CGFloat', '  public let fontFamily: String', '',
     '  public var font: UIFont { UIFont.systemFont(ofSize: size, weight: weight) }', '  public var lineSpacing: CGFloat { max(0, size * lineHeight - font.lineHeight) }', '',
     '  public init(size: CGFloat, weight: UIFont.Weight, lineHeight: CGFloat, letterSpacing: CGFloat, fontFamily: String) {',
@@ -230,7 +241,7 @@ function generateTypography(light, names) {
     if (!Array.isArray(value) || typeof value[0] !== 'string' || !value[0]) fail(`Invalid font family: ${group}`);
     lines.push(`  public static let ${group}FontFamily = ${JSON.stringify(value[0])}`);
   }
-  lines.push('  // Font files are not bundled. The system font is used until licensed assets are provided.');
+  lines.push('  // 폰트 파일을 포함하기 전까지 시스템 폰트를 사용한다.');
   for (const name of names) {
     if (light.all.get(name).$type !== 'typography') fail(`Invalid typography type: ${name}`);
     const style = light.resolved.get(name);
@@ -248,12 +259,12 @@ function generateTypography(light, names) {
     lines.push(`  public static let ${swiftName(name, 'text-style')} = FestiCoreTextStyle(size: ${format(size)}, weight: .${enumWeight}, lineHeight: ${format(height)}, letterSpacing: ${format(kern)}, fontFamily: ${familyGroup}FontFamily)`);
   }
   lines.push('}', '');
-  write('Sources/FestiCoreTypography.swift', lines.join('\n'));
+  collectOutput(outputs, 'Sources/FestiCoreTypography.swift', lines.join('\n'));
 }
 export async function buildIOS() {
   if (process.env.FESTICORE_OUTPUT_ROOT) fail('FESTICORE_OUTPUT_ROOT is not supported');
   const light = loadTheme('light'), dark = loadTheme('dark');
-  // Style Dictionary v4 performs an independent DTCG parse/reference pass for each theme.
+  // 테마별 DTCG 별칭 해석 결과를 Style Dictionary와 대조한다.
   for (const theme of [light, dark]) {
     const sd = new StyleDictionary({ tokens: theme.raw, usesDtcg: true, platforms: { ios: { transforms: [] } } });
     const dictionary = await sd.getPlatformTokens('ios');
@@ -271,10 +282,16 @@ export async function buildIOS() {
   for (const [group, names] of [['color',colors],['spacing',spacing],['radius',radius],['text-style',typography]]) assertNames(names, group, group);
   const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
   if (JSON.stringify(colors.map(name => swiftName(name, 'color')).sort()) !== JSON.stringify(snapshot)) fail('Public color names differ from iOS API snapshot');
+  const outputs = new Map();
+  generateColors(light, dark, colors, outputs);
+  generateLayout(light, spacing, radius, outputs);
+  generateTypography(light, typography, outputs);
   clearGeneratedOutput();
-  generateColors(light, dark, colors);
-  generateLayout(light, spacing, radius);
-  generateTypography(light, typography);
+  for (const [relative, content] of outputs) {
+    const dest = path.join(outputRoot, relative);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.writeFileSync(dest, content);
+  }
   return { colors: colors.length, spacing: spacing.length, radius: radius.length, typography: typography.length };
 }
 if (process.argv[1] && fs.realpathSync(path.resolve(process.argv[1])) === fs.realpathSync(fileURLToPath(import.meta.url))) {
