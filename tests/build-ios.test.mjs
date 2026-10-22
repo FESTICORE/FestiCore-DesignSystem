@@ -39,22 +39,38 @@ function expectFailure(change, message) {
   } finally { cleanup(f); }
 }
 
-test('light/dark Swift API and assets are deterministic, source tokens stay internal', () => {
+test('light/dark Swift color extensions are deterministic without assets', () => {
   const f = fixture();
   try {
     let result = run(f);
     assert.equal(result.status, 0, result.stderr);
-    const color = fs.readFileSync(path.join(f.output, 'Sources/FestiCoreColor.swift'), 'utf8');
+    const uiColor = fs.readFileSync(path.join(f.output, 'Sources/UIColors.swift'), 'utf8');
+    const color = fs.readFileSync(path.join(f.output, 'Sources/Colors.swift'), 'utf8');
+    const shape = fs.readFileSync(path.join(f.output, 'Sources/ShapeStyle+.swift'), 'utf8');
     const layout = fs.readFileSync(path.join(f.output, 'Sources/FestiCoreLayout.swift'), 'utf8');
     const typography = fs.readFileSync(path.join(f.output, 'Sources/FestiCoreTypography.swift'), 'utf8');
-    assert.match(color, /public static var primaryNormal: UIColor/);
-    assert.match(color, /traits\.userInterfaceStyle == \.dark/);
-    assert.doesNotMatch(color, /atomic/);
+    for (const [filename, content] of [['UIColors.swift', uiColor], ['Colors.swift', color], ['ShapeStyle+.swift', shape], ['FestiCoreLayout.swift', layout], ['FestiCoreTypography.swift', typography]]) {
+      assert.ok(content.includes(`//  ${filename}\n//  FestiCoreDesignKit\n`));
+      assert.match(content, /Created by FestiCore-DesignSystem generator\./);
+    }
+    assert.match(uiColor, /public extension UIColor/);
+    assert.match(uiColor, /static var primaryNormal: UIColor/);
+    assert.match(uiColor, /traits\.userInterfaceStyle == \.dark/);
+    assert.match(color, /public extension Color/);
+    assert.match(color, /static var primaryNormal: Color \{ Color\(uiColor: UIColor\.primaryNormal\) \}/);
+    assert.match(shape, /public extension ShapeStyle where Self == Color/);
+    assert.match(shape, /static var primaryNormal: Color \{ Color\.primaryNormal \}/);
+    assert.doesNotMatch(uiColor + color + shape, /atomic|FestiCoreColor \{/);
     assert.match(typography, /letterSpacing: -0\.884/);
     assert.match(typography, /baseBodyRegular = FestiCoreTextStyle\(size: 17, weight: \.regular, lineHeight: 1\.529,/);
     assert.match(typography, /fontFamily: baseFontFamily/);
     const names = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
-    assert.deepEqual(fs.readdirSync(path.join(f.output, 'Assets/FestiCoreColors.xcassets')).filter(name => name.endsWith('.colorset')).sort(), names.map(name => `${name}.colorset`).sort());
+    for (const symbol of names) {
+      assert.match(uiColor, new RegExp(`static var ${symbol}: UIColor \\{`));
+      assert.match(color, new RegExp(`static var ${symbol}: Color \\{ Color\\(uiColor: UIColor\\.${symbol}\\) \\}`));
+      assert.match(shape, new RegExp(`static var ${symbol}: Color \\{ Color\\.${symbol} \\}`));
+    }
+    assert.equal(fs.existsSync(path.join(f.output, 'Assets')), false);
     const layoutSymbols = [...layout.matchAll(/public static let (\w+): CGFloat/g)].map(match => match[1]);
     assert.deepEqual(layoutSymbols.sort(), [
       'marginM2','marginM4','marginM6','marginM8','marginM12','marginM16','marginM20','marginM24',
@@ -63,10 +79,10 @@ test('light/dark Swift API and assets are deterministic, source tokens stay inte
     ].sort());
     assert.equal([...typography.matchAll(/public static let \w+ = FestiCoreTextStyle/g)].length, 37);
     assert.doesNotMatch(layout + typography, /public static let (?:opacity|state|breakpoint|safeArea|gradient)/i);
-    const before = color + typography;
+    const before = uiColor + color + shape + layout + typography;
     result = run(f);
     assert.equal(result.status, 0, result.stderr);
-    assert.equal(fs.readFileSync(path.join(f.output, 'Sources/FestiCoreColor.swift'), 'utf8') + fs.readFileSync(path.join(f.output, 'Sources/FestiCoreTypography.swift'), 'utf8'), before);
+    assert.equal(['UIColors.swift', 'Colors.swift', 'ShapeStyle+.swift', 'FestiCoreLayout.swift', 'FestiCoreTypography.swift'].map(filename => fs.readFileSync(path.join(f.output, 'Sources', filename), 'utf8')).join(''), before);
     assert.equal(fs.existsSync(path.join(f.output, 'Sources/FestiCoreGradient.swift')), false);
   } finally { cleanup(f); }
 });
@@ -121,7 +137,7 @@ test('build CLI runs from a path with spaces and non-ASCII characters', () => {
     const result = run(f);
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /Generated iOS tokens/);
-    assert.equal(fs.existsSync(path.join(f.output, 'Sources/FestiCoreColor.swift')), true);
+    assert.equal(fs.existsSync(path.join(f.output, 'Sources/UIColors.swift')), true);
   } finally { cleanup(f); }
 });
 
