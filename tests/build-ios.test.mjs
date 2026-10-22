@@ -68,9 +68,13 @@ test('theme path mismatch and shared typography value mismatch fail', () => {
     edit(f, 'color/semantic.dark.json', json => { delete json.color.primary.normal; });
     assert.match(run(f).stderr, /color paths differ/);
     edit(f, 'color/semantic.dark.json', json => { json.color.primary.normal = { $type: 'color', $value: '#C6FF34' }; });
-    edit(f, 'typography.json', json => { json['text-style'].base.body.regular.$value.lineHeight = 1.6; });
-    // Both themes share the same file, so the changed value is valid and reflected once.
-    assert.equal(run(f).status, 0);
+    fs.copyFileSync(path.join(f.tokens, 'typography.json'), path.join(f.tokens, 'typography.dark.json'));
+    edit(f, 'typography.dark.json', json => { json['text-style'].base.body.regular.$value.lineHeight = 1.6; });
+    edit(f, '$themes.json', json => {
+      delete json.find(theme => theme.id === 'dark').selectedTokenSets.typography;
+      json.find(theme => theme.id === 'dark').selectedTokenSets['typography.dark'] = 'enabled';
+    });
+    assert.match(run(f).stderr, /text-style value differs/);
   } finally { cleanup(f); }
 });
 
