@@ -1,0 +1,13 @@
+{
+  "name": "festicore-design-system",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22 <23" },
+  "scripts": {
+    "build": "node scripts/build-ios.mjs",
+    "check": "node scripts/check-ios.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "typecheck": "node --check scripts/build-ios.mjs && node --check scripts/check-ios.mjs"
+  },
+  "devDependencies": { "style-dictionary": "4.4.0" }
+}
