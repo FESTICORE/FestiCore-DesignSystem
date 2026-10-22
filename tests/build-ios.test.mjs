@@ -6,18 +6,21 @@ import os from 'node:os';
 import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
-const script = path.join(root, 'scripts/build-ios.mjs');
-function fixture() {
+function fixture(repoName = 'repo') {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'festicore-tokens-'));
-  const tokens = path.join(dir, 'tokens');
-  const output = path.join(dir, 'generated');
+  const repo = path.join(dir, repoName);
+  const tokens = path.join(repo, 'tokens');
+  const output = path.join(repo, 'generated/ios');
+  fs.mkdirSync(path.join(repo, 'tests/fixtures'), { recursive: true });
   fs.cpSync(path.join(root, 'tokens'), tokens, { recursive: true });
-  return { dir, tokens, output };
+  fs.cpSync(path.join(root, 'scripts'), path.join(repo, 'scripts'), { recursive: true });
+  fs.copyFileSync(path.join(root, 'package.json'), path.join(repo, 'package.json'));
+  fs.copyFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), path.join(repo, 'tests/fixtures/public-color-names.json'));
+  fs.symlinkSync(path.join(root, 'node_modules'), path.join(repo, 'node_modules'));
+  return { dir, repo, tokens, output };
 }
 function run(f) {
-  return spawnSync(process.execPath, [script], {
-    encoding: 'utf8', env: { ...process.env, FESTICORE_TOKEN_ROOT: f.tokens, FESTICORE_OUTPUT_ROOT: f.output }
-  });
+  return spawnSync(process.execPath, [path.join(f.repo, 'scripts/build-ios.mjs')], { encoding: 'utf8' });
 }
 function edit(f, filename, change) {
   const file = path.join(f.tokens, filename);
@@ -42,13 +45,24 @@ test('light/dark Swift API and assets are deterministic, source tokens stay inte
     let result = run(f);
     assert.equal(result.status, 0, result.stderr);
     const color = fs.readFileSync(path.join(f.output, 'Sources/FestiCoreColor.swift'), 'utf8');
+    const layout = fs.readFileSync(path.join(f.output, 'Sources/FestiCoreLayout.swift'), 'utf8');
     const typography = fs.readFileSync(path.join(f.output, 'Sources/FestiCoreTypography.swift'), 'utf8');
     assert.match(color, /public static var primaryNormal: UIColor/);
     assert.match(color, /traits\.userInterfaceStyle == \.dark/);
     assert.doesNotMatch(color, /atomic/);
     assert.match(typography, /letterSpacing: -0\.884/);
+    assert.match(typography, /baseBodyRegular = FestiCoreTextStyle\(size: 17, weight: \.regular, lineHeight: 1\.529,/);
     assert.match(typography, /fontFamily: baseFontFamily/);
-    assert.equal(fs.readdirSync(path.join(f.output, 'Assets/FestiCoreColors.xcassets')).filter(name => name.endsWith('.colorset')).length, 65);
+    const names = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
+    assert.deepEqual(fs.readdirSync(path.join(f.output, 'Assets/FestiCoreColors.xcassets')).filter(name => name.endsWith('.colorset')).sort(), names.map(name => `${name}.colorset`).sort());
+    const layoutSymbols = [...layout.matchAll(/public static let (\w+): CGFloat/g)].map(match => match[1]);
+    assert.deepEqual(layoutSymbols.sort(), [
+      'marginM2','marginM4','marginM6','marginM8','marginM12','marginM16','marginM20','marginM24',
+      'paddingP4','paddingP8','paddingP12','paddingP16','paddingP20','paddingP24',
+      'r4','r8','r12','r16','r20','r24'
+    ].sort());
+    assert.equal([...typography.matchAll(/public static let \w+ = FestiCoreTextStyle/g)].length, 37);
+    assert.doesNotMatch(layout + typography, /public static let (?:opacity|state|breakpoint|safeArea|gradient)/i);
     const before = color + typography;
     result = run(f);
     assert.equal(result.status, 0, result.stderr);
@@ -102,18 +116,12 @@ test('invalid units, output names and enabled atomic colors fail', () => {
 });
 
 test('build CLI runs from a path with spaces and non-ASCII characters', () => {
-  const f = fixture();
+  const f = fixture('space path 한국어');
   try {
-    const repo = path.join(f.dir, 'space path 한국어');
-    fs.mkdirSync(path.join(repo, 'tests/fixtures'), { recursive: true });
-    fs.cpSync(path.join(root, 'scripts'), path.join(repo, 'scripts'), { recursive: true });
-    fs.cpSync(f.tokens, path.join(repo, 'tokens'), { recursive: true });
-    fs.copyFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), path.join(repo, 'tests/fixtures/public-color-names.json'));
-    fs.symlinkSync(path.join(root, 'node_modules'), path.join(repo, 'node_modules'));
-    const result = spawnSync(process.execPath, [path.join(repo, 'scripts/build-ios.mjs')], { encoding: 'utf8' });
+    const result = run(f);
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /Generated iOS tokens/);
-    assert.equal(fs.existsSync(path.join(repo, 'generated/ios/Sources/FestiCoreColor.swift')), true);
+    assert.equal(fs.existsSync(path.join(f.output, 'Sources/FestiCoreColor.swift')), true);
   } finally { cleanup(f); }
 });
 
@@ -126,6 +134,12 @@ test('duplicate token paths and duplicate keys inside JSON fail', () => {
     const file = path.join(f.tokens, 'color/semantic.light.json');
     fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('"normal": {', '"normal": {"$type":"color","$value":"#FFFFFF"}, "normal": {'));
   }, /Duplicate JSON key: normal/);
+  expectFailure(f => edit(f, 'color/semantic.light.json', json => {
+    json.color['primary.normal'] = { $type: 'color', $value: '#FFFFFF' };
+  }), /Invalid token path segment: primary\.normal/);
+  expectFailure(f => edit(f, 'color/semantic.light.json', json => {
+    json.color['{primary}'] = { $type: 'color', $value: '#FFFFFF' };
+  }), /Invalid token path segment/);
 });
 
 test('invalid color, dimension and typography values fail', () => {
@@ -138,4 +152,28 @@ test('invalid color, dimension and typography values fail', () => {
 
 test('token set path traversal fails before reading a file', () => {
   expectFailure(f => edit(f, '$themes.json', json => { json[0].selectedTokenSets['../../outside'] = 'enabled'; }), /Unsafe token set/);
+});
+
+test('output overrides and redirected generated folders cannot delete data', () => {
+  const f = fixture();
+  try {
+    const protectedFile = path.join(f.dir, 'keep.txt');
+    fs.writeFileSync(protectedFile, 'keep');
+    const env = { ...process.env, FESTICORE_OUTPUT_ROOT: f.dir };
+    const build = spawnSync(process.execPath, [path.join(f.repo, 'scripts/build-ios.mjs')], { encoding: 'utf8', env });
+    assert.notEqual(build.status, 0);
+    assert.match(build.stderr, /FESTICORE_OUTPUT_ROOT is not supported/);
+    const check = spawnSync(process.execPath, [path.join(root, 'scripts/check-ios.mjs')], { encoding: 'utf8', env, cwd: f.dir });
+    assert.notEqual(check.status, 0);
+    assert.match(check.stderr, /FESTICORE_OUTPUT_ROOT is not supported/);
+    assert.equal(fs.readFileSync(protectedFile, 'utf8'), 'keep');
+    const outside = path.join(f.dir, 'outside');
+    fs.mkdirSync(path.join(outside, 'ios'), { recursive: true });
+    fs.writeFileSync(path.join(outside, 'ios', 'keep.txt'), 'keep');
+    fs.symlinkSync(outside, path.join(f.repo, 'generated'));
+    const redirected = run(f);
+    assert.notEqual(redirected.status, 0);
+    assert.match(redirected.stderr, /Unsafe output root/);
+    assert.equal(fs.readFileSync(path.join(outside, 'ios', 'keep.txt'), 'utf8'), 'keep');
+  } finally { cleanup(f); }
 });

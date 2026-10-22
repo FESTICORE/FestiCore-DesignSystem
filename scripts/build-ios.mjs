@@ -4,8 +4,8 @@ import { fileURLToPath } from 'node:url';
 import StyleDictionary from 'style-dictionary';
 
 const root = path.resolve(import.meta.dirname, '..');
-const tokenRoot = process.env.FESTICORE_TOKEN_ROOT ?? path.join(root, 'tokens');
-const outputRoot = process.env.FESTICORE_OUTPUT_ROOT ?? path.join(root, 'generated/ios');
+const tokenRoot = path.join(root, 'tokens');
+const outputRoot = path.join(root, 'generated/ios');
 const reference = /^\{([^{}]+)\}$/;
 
 function fail(message) { throw new Error(message); }
@@ -65,8 +65,13 @@ function parseUniqueJSON(file) {
 function leafEntries(node, prefix = [], result = new Map()) {
   for (const [key, value] of Object.entries(node)) {
     if (key.startsWith('$')) continue;
+    if (/[.{}]/.test(key)) fail(`Invalid token path segment: ${key}`);
     const next = [...prefix, key];
-    if (value && typeof value === 'object' && '$value' in value) result.set(next.join('.'), value);
+    if (value && typeof value === 'object' && '$value' in value) {
+      const name = next.join('.');
+      if (result.has(name)) fail(`Duplicate token: ${name}`);
+      result.set(name, value);
+    }
     else if (value && typeof value === 'object' && !Array.isArray(value)) leafEntries(value, next, result);
     else fail(`Invalid token node: ${next.join('.')}`);
   }
@@ -170,6 +175,17 @@ function write(relative, content) {
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.writeFileSync(dest, content);
 }
+function clearGeneratedOutput() {
+  if (process.env.FESTICORE_OUTPUT_ROOT) fail('FESTICORE_OUTPUT_ROOT is not supported');
+  const marker = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  if (marker.name !== 'festicore-design-system') fail('Unsafe output root: project marker mismatch');
+  const parent = path.dirname(outputRoot);
+  fs.mkdirSync(parent, { recursive: true });
+  if (fs.realpathSync(parent) !== path.join(fs.realpathSync(root), 'generated')) fail('Unsafe output root: generated directory is redirected');
+  const current = fs.lstatSync(outputRoot, { throwIfNoEntry: false });
+  if (current && !current.isDirectory()) fail('Unsafe output root: expected directory');
+  fs.rmSync(outputRoot, { recursive: true, force: true });
+}
 function generateColors(light, dark, names) {
   const lines = ['// Generated from FestiCore-DesignSystem tokens. Do not edit.', 'import UIKit', '', 'public enum FestiCoreColor {'];
   for (const name of names) {
@@ -235,6 +251,7 @@ function generateTypography(light, names) {
   write('Sources/FestiCoreTypography.swift', lines.join('\n'));
 }
 export async function buildIOS() {
+  if (process.env.FESTICORE_OUTPUT_ROOT) fail('FESTICORE_OUTPUT_ROOT is not supported');
   const light = loadTheme('light'), dark = loadTheme('dark');
   // Style Dictionary v4 performs an independent DTCG parse/reference pass for each theme.
   for (const theme of [light, dark]) {
@@ -254,7 +271,7 @@ export async function buildIOS() {
   for (const [group, names] of [['color',colors],['spacing',spacing],['radius',radius],['text-style',typography]]) assertNames(names, group, group);
   const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
   if (JSON.stringify(colors.map(name => swiftName(name, 'color')).sort()) !== JSON.stringify(snapshot)) fail('Public color names differ from iOS API snapshot');
-  fs.rmSync(outputRoot, {recursive:true,force:true});
+  clearGeneratedOutput();
   generateColors(light, dark, colors);
   generateLayout(light, spacing, radius);
   generateTypography(light, typography);
