@@ -184,7 +184,12 @@ export async function buildIOS() {
   // Style Dictionary v4 performs an independent DTCG parse/reference pass for each theme.
   for (const theme of [light, dark]) {
     const sd = new StyleDictionary({ tokens: theme.raw, usesDtcg: true, platforms: { ios: { transforms: [] } } });
-    await sd.getPlatformTokens('ios');
+    const dictionary = await sd.getPlatformTokens('ios');
+    for (const [name, expected] of theme.resolved) {
+      const actual = dictionary.tokenMap.get(`{${name}}`)?.$value;
+      if (JSON.stringify(actual) !== JSON.stringify(expected)) fail(`Style Dictionary resolution differs: ${name}`);
+      theme.resolved.set(name, actual);
+    }
   }
   const colors = samePathsAndValues(light, dark, 'color');
   if (colors.some(name => name.startsWith('color.atomic.'))) fail('Atomic color is enabled for output');
