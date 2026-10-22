@@ -5,15 +5,15 @@
         "$type": "gradient",
         "$value": [
           {
-            "color": "#F6F6F100",
+            "color": "#F3F3F600",
             "position": 0
           },
           {
-            "color": "#F6F6F1",
+            "color": "#F3F3F6",
             "position": 0.35
           },
           {
-            "color": "#F6F6F1",
+            "color": "#F3F3F6",
             "position": 1
           }
         ],
@@ -23,11 +23,11 @@
         "$type": "gradient",
         "$value": [
           {
-            "color": "#F6F6F1",
+            "color": "#F3F3F6",
             "position": 0
           },
           {
-            "color": "#F6F6F100",
+            "color": "#F3F3F600",
             "position": 1
           }
         ],
@@ -37,11 +37,11 @@
         "$type": "gradient",
         "$value": [
           {
-            "color": "#F6F6F100",
+            "color": "#F3F3F600",
             "position": 0
           },
           {
-            "color": "#F6F6F1",
+            "color": "#F3F3F6",
             "position": 1
           }
         ],

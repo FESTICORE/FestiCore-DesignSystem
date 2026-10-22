@@ -3,11 +3,13 @@
     "primary": {
       "normal": {
         "$type": "color",
-        "$value": "{color.atomic.ink.900}"
+        "$value": "{color.atomic.ink.900}",
+        "$description": "Primary 면적(주요 버튼 등). Light=Ink 900 / Dark=Lime 500"
       },
       "on-primary": {
         "$type": "color",
-        "$value": "{color.atomic.common.white}"
+        "$value": "{color.atomic.common.white}",
+        "$description": "Primary 위 글자·아이콘"
       }
     },
     "secondary": {
@@ -45,11 +47,11 @@
     "background": {
       "normal": {
         "$type": "color",
-        "$value": "{color.atomic.base.paper}"
+        "$value": "{color.atomic.base.mist}"
       },
       "alternative": {
         "$type": "color",
-        "$value": "{color.atomic.base.paper-200}"
+        "$value": "{color.atomic.base.mist-200}"
       },
       "elevated": {
         "$type": "color",
@@ -73,11 +75,17 @@
     "fill": {
       "normal": {
         "$type": "color",
-        "$value": "{color.atomic.ink.100}"
+        "$value": "{color.atomic.ink.100}",
+        "$description": "다크는 반투명이라 Elevated 위에서도 구분됨"
       },
       "strong": {
         "$type": "color",
         "$value": "{color.atomic.ink.200}"
+      },
+      "selected": {
+        "$type": "color",
+        "$value": "{color.atomic.common.white}",
+        "$description": "Fill 트랙 위에 떠 있는 선택 칸(Segmented 등)"
       }
     },
     "status": {
@@ -109,17 +117,63 @@
       },
       "lime": {
         "$type": "color",
-        "$value": "{color.atomic.lime.500}"
+        "$value": "{color.atomic.lime.500}",
+        "$description": "모드와 무관한 브랜드 라임"
       },
       "ink": {
         "$type": "color",
-        "$value": "{color.atomic.ink.900}"
+        "$value": "{color.atomic.ink.900}",
+        "$description": "모드와 무관한 브랜드 잉크"
+      },
+      "purple-tint": {
+        "$type": "color",
+        "$value": "{color.atomic.purple.100}",
+        "$description": "모드와 무관한 보라 틴트 (Login Tag 등)"
+      }
+    },
+    "static-alpha": {
+      "black-80": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.black.80}",
+        "$description": "토스트 바탕"
+      },
+      "black-60": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.black.60}",
+        "$description": "이미지 위 어둡게 덮는 레이어"
+      },
+      "black-40": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.black.40}",
+        "$description": "이미지 위 원형 버튼 바탕"
+      },
+      "black-20": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.black.20}"
+      },
+      "white-80": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.white.80}"
+      },
+      "white-60": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.white.60}"
+      },
+      "white-40": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.white.40}"
+      },
+      "white-20": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.white.20}",
+        "$description": "어두운 면 위 구분선·약한 면"
       }
     },
     "inverse": {
       "background": {
         "$type": "color",
-        "$value": "{color.atomic.ink.900}"
+        "$value": "{color.atomic.ink.900}",
+        "$description": "선택 칩·진행 바·Apple 로그인 버튼"
       },
       "label": {
         "$type": "color",
@@ -130,6 +184,11 @@
       "dimmer": {
         "$type": "color",
         "$value": "{color.atomic.opacity.black.50}"
+      },
+      "glass": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.white.20}",
+        "$description": "글래스 Top Bar, background blur 20과 함께"
       }
     },
     "interaction": {

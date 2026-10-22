@@ -11,10 +11,10 @@ FESTICORE 앱(iOS 우선, Android 확장)의 **Foundation 디자인 토큰**입�
 
 | 파일 | 내용 | 모드 |
 | --- | --- | --- |
-| `tokens/color/atomic.json` | 원색 팔레트: Common, Base(paper·mist), Ink(100~900), Lime·Purple·Red·Orange·Green·Blue·Pink·Yellow(100/500/700), System(iOS 시스템 색 light/dark), Opacity(White·Black·Ink 900·Ink 500 × 5~90%) | 공통 |
-| `tokens/color/semantic.light.json` | 화면에서 쓰는 색: primary, secondary, label, background, line, fill, status, accent, static, inverse, material, interaction → atomic 참조 | Light (기본) |
+| `tokens/color/atomic.json` | 원색 팔레트: Common, Base(mist·mist 200), Ink(100~900), Lime·Purple·Red·Orange·Green·Blue·Pink·Yellow(100/500/700), System(iOS 시스템 색 light/dark), Opacity(White·Black·Ink 900·Ink 500 × 5~90%, 각 색 500 × 10%) | 공통 |
+| `tokens/color/semantic.light.json` | 화면에서 쓰는 색: primary, secondary, label, background, line, fill, status, accent, static, static-alpha, inverse, material, interaction → atomic 참조 | Light (기본) |
 | `tokens/color/semantic.dark.json` | 위와 같은 키, 다크 모드 값 | Dark |
-| `tokens/foundation.json` | spacing(margin `m-*`, padding `p-*`: 4~24), radius(`r-*`: 4~24), opacity(`o-5`~`o-90`), state(pressed·active·disabled·dimmed), breakpoint | 공통 |
+| `tokens/foundation.json` | spacing(margin `m-*`: 2·4·6~24, padding `p-*`: 4~24), radius(`r-*`: 4~24), opacity(`o-5`~`o-90`), state(pressed·active·disabled·dimmed), breakpoint | 공통 |
 | `tokens/typography.json` | font-family(base=Pretendard, point=Bagel Fat One), font-weight(400·500·700), font-size, text-style(base 11단계 × bold/medium/regular, point 4단계) | 공통 |
 | `tokens/gradient.json` | bottom-cta, scroll-fade-top, scroll-fade-bottom (light/dark) | light/dark |
 | `tokens/safe-area.json` | 기기별 상·하단 Safe Area 참고값 | 공통 |
@@ -22,6 +22,7 @@ FESTICORE 앱(iOS 우선, Android 확장)의 **Foundation 디자인 토큰**입�
 ## 사용 규칙
 
 - **화면 코드는 semantic 색만 씁니다.** atomic은 semantic이 참조하는 원재료입니다.
+- **static / static-alpha**는 라이트·다크 모두 같은 값입니다. 이미지 위 요소, 브랜드 고정색(라임 깃발 원, Login Tag 등)에만 씁니다.
 - **Light가 기본 테마**, Dark는 `semantic.dark.json`으로 교체합니다(키 동일).
 - **단위:** 1pt(iOS) = 1dp/sp(Android) = 1px(토큰). `dimension` 값은 `px`로 적었지만 앱에서는 pt/dp로 읽습니다.
 - **lineHeight**는 배수(예: `1.529` = 152.9%), **letterSpacing**은 `em`(예: `-0.026em` = -2.6%)입니다.
@@ -37,3 +38,4 @@ FESTICORE 앱(iOS 우선, Android 확장)의 **Foundation 디자인 토큰**입�
 | 날짜 | 버전 | 내용 |
 | --- | --- | --- |
 | 2026-10-21 | 0.1.0 | Figma Design System v1에서 Foundation 토큰 첫 내보내기 |
+| 2026-10-22 | 0.2.0 | 배경 Paper 삭제 → Mist로 통일, 100단계 색 밝게 조정, Ink 400 추가(다크 Label/Assistive), 다크 Fill 반투명화 + Fill/Selected, 다크 Accent Background를 500의 10% 틴트로, Static Alpha(Black·White 20~80)·Material/Glass·Static/Purple Tint 추가, Margin m-2·m-6 추가, 그라디언트 라이트 배경색 Mist로 |

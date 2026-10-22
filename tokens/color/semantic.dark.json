@@ -3,11 +3,13 @@
     "primary": {
       "normal": {
         "$type": "color",
-        "$value": "{color.atomic.lime.500}"
+        "$value": "{color.atomic.lime.500}",
+        "$description": "Primary 면적(주요 버튼 등). Light=Ink 900 / Dark=Lime 500"
       },
       "on-primary": {
         "$type": "color",
-        "$value": "{color.atomic.ink.900}"
+        "$value": "{color.atomic.ink.900}",
+        "$description": "Primary 위 글자·아이콘"
       }
     },
     "secondary": {
@@ -35,7 +37,7 @@
       },
       "assistive": {
         "$type": "color",
-        "$value": "{color.atomic.ink.500}"
+        "$value": "{color.atomic.ink.400}"
       },
       "disable": {
         "$type": "color",
@@ -73,11 +75,17 @@
     "fill": {
       "normal": {
         "$type": "color",
-        "$value": "{color.atomic.ink.800}"
+        "$value": "{color.atomic.opacity.white.10}",
+        "$description": "다크는 반투명이라 Elevated 위에서도 구분됨"
       },
       "strong": {
         "$type": "color",
-        "$value": "{color.atomic.ink.700}"
+        "$value": "{color.atomic.opacity.white.20}"
+      },
+      "selected": {
+        "$type": "color",
+        "$value": "{color.atomic.ink.600}",
+        "$description": "Fill 트랙 위에 떠 있는 선택 칸(Segmented 등)"
       }
     },
     "status": {
@@ -109,17 +117,63 @@
       },
       "lime": {
         "$type": "color",
-        "$value": "{color.atomic.lime.500}"
+        "$value": "{color.atomic.lime.500}",
+        "$description": "모드와 무관한 브랜드 라임"
       },
       "ink": {
         "$type": "color",
-        "$value": "{color.atomic.ink.900}"
+        "$value": "{color.atomic.ink.900}",
+        "$description": "모드와 무관한 브랜드 잉크"
+      },
+      "purple-tint": {
+        "$type": "color",
+        "$value": "{color.atomic.purple.100}",
+        "$description": "모드와 무관한 보라 틴트 (Login Tag 등)"
+      }
+    },
+    "static-alpha": {
+      "black-80": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.black.80}",
+        "$description": "토스트 바탕"
+      },
+      "black-60": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.black.60}",
+        "$description": "이미지 위 어둡게 덮는 레이어"
+      },
+      "black-40": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.black.40}",
+        "$description": "이미지 위 원형 버튼 바탕"
+      },
+      "black-20": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.black.20}"
+      },
+      "white-80": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.white.80}"
+      },
+      "white-60": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.white.60}"
+      },
+      "white-40": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.white.40}"
+      },
+      "white-20": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.white.20}",
+        "$description": "어두운 면 위 구분선·약한 면"
       }
     },
     "inverse": {
       "background": {
         "$type": "color",
-        "$value": "{color.atomic.common.white}"
+        "$value": "{color.atomic.common.white}",
+        "$description": "선택 칩·진행 바·Apple 로그인 버튼"
       },
       "label": {
         "$type": "color",
@@ -130,6 +184,11 @@
       "dimmer": {
         "$type": "color",
         "$value": "{color.atomic.opacity.black.70}"
+      },
+      "glass": {
+        "$type": "color",
+        "$value": "{color.atomic.opacity.black.20}",
+        "$description": "글래스 Top Bar, background blur 20과 함께"
       }
     },
     "interaction": {
@@ -180,35 +239,35 @@
       "background": {
         "lime": {
           "$type": "color",
-          "$value": "{color.atomic.lime.700}"
+          "$value": "{color.atomic.opacity.lime-500.10}"
         },
         "purple": {
           "$type": "color",
-          "$value": "{color.atomic.purple.700}"
+          "$value": "{color.atomic.opacity.purple-500.10}"
         },
         "red": {
           "$type": "color",
-          "$value": "{color.atomic.red.700}"
+          "$value": "{color.atomic.opacity.red-500.10}"
         },
         "orange": {
           "$type": "color",
-          "$value": "{color.atomic.orange.700}"
+          "$value": "{color.atomic.opacity.orange-500.10}"
         },
         "green": {
           "$type": "color",
-          "$value": "{color.atomic.green.700}"
+          "$value": "{color.atomic.opacity.green-500.10}"
         },
         "blue": {
           "$type": "color",
-          "$value": "{color.atomic.blue.700}"
+          "$value": "{color.atomic.opacity.blue-500.10}"
         },
         "pink": {
           "$type": "color",
-          "$value": "{color.atomic.pink.700}"
+          "$value": "{color.atomic.opacity.pink-500.10}"
         },
         "yellow": {
           "$type": "color",
-          "$value": "{color.atomic.yellow.700}"
+          "$value": "{color.atomic.opacity.yellow-500.10}"
         }
       },
       "point": {

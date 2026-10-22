@@ -12,14 +12,6 @@
         }
       },
       "base": {
-        "paper": {
-          "$type": "color",
-          "$value": "#F6F6F1"
-        },
-        "paper-200": {
-          "$type": "color",
-          "$value": "#ECECE4"
-        },
         "mist": {
           "$type": "color",
           "$value": "#F3F3F6"
@@ -50,6 +42,10 @@
           "$type": "color",
           "$value": "#8A8A93"
         },
+        "400": {
+          "$type": "color",
+          "$value": "#A9A9B1"
+        },
         "300": {
           "$type": "color",
           "$value": "#C9C9CF"
@@ -66,7 +62,7 @@
       "lime": {
         "100": {
           "$type": "color",
-          "$value": "#F1FCCF"
+          "$value": "#F2F8E1"
         },
         "300": {
           "$type": "color",
@@ -84,7 +80,7 @@
       "purple": {
         "100": {
           "$type": "color",
-          "$value": "#EEE6FF"
+          "$value": "#F6F2FF"
         },
         "300": {
           "$type": "color",
@@ -102,7 +98,7 @@
       "red": {
         "100": {
           "$type": "color",
-          "$value": "#FFE3E0"
+          "$value": "#FFF1EF"
         },
         "500": {
           "$type": "color",
@@ -116,7 +112,7 @@
       "orange": {
         "100": {
           "$type": "color",
-          "$value": "#FFEBD6"
+          "$value": "#FFF2E5"
         },
         "500": {
           "$type": "color",
@@ -130,7 +126,7 @@
       "green": {
         "100": {
           "$type": "color",
-          "$value": "#DDF5E3"
+          "$value": "#E6FBEB"
         },
         "500": {
           "$type": "color",
@@ -144,7 +140,7 @@
       "blue": {
         "100": {
           "$type": "color",
-          "$value": "#E0EBFF"
+          "$value": "#EFF5FF"
         },
         "500": {
           "$type": "color",
@@ -158,7 +154,7 @@
       "pink": {
         "100": {
           "$type": "color",
-          "$value": "#FFE4F4"
+          "$value": "#FFEFF8"
         },
         "500": {
           "$type": "color",
@@ -172,7 +168,7 @@
       "yellow": {
         "100": {
           "$type": "color",
-          "$value": "#FFF6C7"
+          "$value": "#F9F5DF"
         },
         "500": {
           "$type": "color",
@@ -442,6 +438,62 @@
             "$type": "color",
             "$value": "#8A8A93E6",
             "$description": "#8A8A93 · 90% opacity"
+          }
+        },
+        "lime-500": {
+          "10": {
+            "$type": "color",
+            "$value": "#C6FF341A",
+            "$description": "#C6FF34 · 10% opacity"
+          }
+        },
+        "purple-500": {
+          "10": {
+            "$type": "color",
+            "$value": "#7F3AEF1A",
+            "$description": "#7F3AEF · 10% opacity"
+          }
+        },
+        "red-500": {
+          "10": {
+            "$type": "color",
+            "$value": "#FF4D3D1A",
+            "$description": "#FF4D3D · 10% opacity"
+          }
+        },
+        "orange-500": {
+          "10": {
+            "$type": "color",
+            "$value": "#FF9A2E1A",
+            "$description": "#FF9A2E · 10% opacity"
+          }
+        },
+        "green-500": {
+          "10": {
+            "$type": "color",
+            "$value": "#2FBF5B1A",
+            "$description": "#2FBF5B · 10% opacity"
+          }
+        },
+        "blue-500": {
+          "10": {
+            "$type": "color",
+            "$value": "#3D7BFF1A",
+            "$description": "#3D7BFF · 10% opacity"
+          }
+        },
+        "pink-500": {
+          "10": {
+            "$type": "color",
+            "$value": "#FF6FC81A",
+            "$description": "#FF6FC8 · 10% opacity"
+          }
+        },
+        "yellow-500": {
+          "10": {
+            "$type": "color",
+            "$value": "#FFD93D1A",
+            "$description": "#FFD93D · 10% opacity"
           }
         }
       }

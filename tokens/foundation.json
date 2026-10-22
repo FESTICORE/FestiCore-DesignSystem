@@ -1,9 +1,19 @@
 {
   "spacing": {
     "margin": {
+      "m-2": {
+        "$type": "dimension",
+        "$value": "2px",
+        "$description": "태그·배지 안쪽, 라벨-보조문구 사이 등 촘촘한 간격 전용"
+      },
       "m-4": {
         "$type": "dimension",
         "$value": "4px"
+      },
+      "m-6": {
+        "$type": "dimension",
+        "$value": "6px",
+        "$description": "태그·배지 안쪽, 라벨-보조문구 사이 등 촘촘한 간격 전용"
       },
       "m-8": {
         "$type": "dimension",
