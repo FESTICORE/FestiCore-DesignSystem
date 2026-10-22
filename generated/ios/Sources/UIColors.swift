@@ -8,459 +8,233 @@
 import UIKit
 
 public extension UIColor {
-  static var accentBackgroundBlue: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.2392156863, 0.4823529412, 1, 0.1019607843) : (0.937254902, 0.9607843137, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentBackgroundBlue = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x3D7BFF, alpha: 0x1A) : UIColor.festiCore(hex: 0xEFF5FF)
   }
 
-  static var accentBackgroundGreen: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.1843137255, 0.7490196078, 0.3568627451, 0.1019607843) : (0.9019607843, 0.9843137255, 0.9215686275, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentBackgroundGreen = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x2FBF5B, alpha: 0x1A) : UIColor.festiCore(hex: 0xE6FBEB)
   }
 
-  static var accentBackgroundLime: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.7764705882, 1, 0.2039215686, 0.1019607843) : (0.9490196078, 0.9725490196, 0.8823529412, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentBackgroundLime = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xC6FF34, alpha: 0x1A) : UIColor.festiCore(hex: 0xF2F8E1)
   }
 
-  static var accentBackgroundOrange: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.6039215686, 0.1803921569, 0.1019607843) : (1, 0.9490196078, 0.8980392157, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentBackgroundOrange = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFF9A2E, alpha: 0x1A) : UIColor.festiCore(hex: 0xFFF2E5)
   }
 
-  static var accentBackgroundPink: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.4352941176, 0.7843137255, 0.1019607843) : (1, 0.937254902, 0.9725490196, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentBackgroundPink = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFF6FC8, alpha: 0x1A) : UIColor.festiCore(hex: 0xFFEFF8)
   }
 
-  static var accentBackgroundPurple: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.4980392157, 0.2274509804, 0.937254902, 0.1019607843) : (0.9647058824, 0.9490196078, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentBackgroundPurple = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x7F3AEF, alpha: 0x1A) : UIColor.festiCore(hex: 0xF6F2FF)
   }
 
-  static var accentBackgroundRed: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.3019607843, 0.2392156863, 0.1019607843) : (1, 0.9450980392, 0.937254902, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentBackgroundRed = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFF4D3D, alpha: 0x1A) : UIColor.festiCore(hex: 0xFFF1EF)
   }
 
-  static var accentBackgroundYellow: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.8509803922, 0.2392156863, 0.1019607843) : (0.9764705882, 0.9607843137, 0.8745098039, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentBackgroundYellow = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFFD93D, alpha: 0x1A) : UIColor.festiCore(hex: 0xF9F5DF)
   }
 
-  static var accentForegroundBlue: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.2392156863, 0.4823529412, 1, 1) : (0.1215686275, 0.3098039216, 0.8, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentForegroundBlue = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x3D7BFF) : UIColor.festiCore(hex: 0x1F4FCC)
   }
 
-  static var accentForegroundGreen: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.1843137255, 0.7490196078, 0.3568627451, 1) : (0.0823529412, 0.4784313725, 0.2117647059, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentForegroundGreen = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x2FBF5B) : UIColor.festiCore(hex: 0x157A36)
   }
 
-  static var accentForegroundLime: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.7764705882, 1, 0.2039215686, 1) : (0.3058823529, 0.4509803922, 0, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentForegroundLime = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xC6FF34) : UIColor.festiCore(hex: 0x4E7300)
   }
 
-  static var accentForegroundOrange: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.6039215686, 0.1803921569, 1) : (0.6509803922, 0.3137254902, 0, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentForegroundOrange = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFF9A2E) : UIColor.festiCore(hex: 0xA65000)
   }
 
-  static var accentForegroundPink: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.4352941176, 0.7843137255, 1) : (0.7215686275, 0.137254902, 0.4980392157, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentForegroundPink = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFF6FC8) : UIColor.festiCore(hex: 0xB8237F)
   }
 
-  static var accentForegroundPurple: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.4980392157, 0.2274509804, 0.937254902, 1) : (0.3568627451, 0.1294117647, 0.768627451, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentForegroundPurple = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x7F3AEF) : UIColor.festiCore(hex: 0x5B21C4)
   }
 
-  static var accentForegroundRed: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.3019607843, 0.2392156863, 1) : (0.7607843137, 0.1215686275, 0.0705882353, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentForegroundRed = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFF4D3D) : UIColor.festiCore(hex: 0xC21F12)
   }
 
-  static var accentForegroundYellow: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.8509803922, 0.2392156863, 1) : (0.4784313725, 0.3764705882, 0, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let accentForegroundYellow = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFFD93D) : UIColor.festiCore(hex: 0x7A6000)
   }
 
-  static var accentPointBlue: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.2392156863, 0.4823529412, 1, 1) : (0.2392156863, 0.4823529412, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let accentPointBlue = UIColor.festiCore(hex: 0x3D7BFF)
 
-  static var accentPointGreen: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.1843137255, 0.7490196078, 0.3568627451, 1) : (0.1843137255, 0.7490196078, 0.3568627451, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let accentPointGreen = UIColor.festiCore(hex: 0x2FBF5B)
 
-  static var accentPointLime: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.7764705882, 1, 0.2039215686, 1) : (0.7764705882, 1, 0.2039215686, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let accentPointLime = UIColor.festiCore(hex: 0xC6FF34)
 
-  static var accentPointOrange: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.6039215686, 0.1803921569, 1) : (1, 0.6039215686, 0.1803921569, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let accentPointOrange = UIColor.festiCore(hex: 0xFF9A2E)
 
-  static var accentPointPink: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.4352941176, 0.7843137255, 1) : (1, 0.4352941176, 0.7843137255, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let accentPointPink = UIColor.festiCore(hex: 0xFF6FC8)
 
-  static var accentPointPurple: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.4980392157, 0.2274509804, 0.937254902, 1) : (0.4980392157, 0.2274509804, 0.937254902, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let accentPointPurple = UIColor.festiCore(hex: 0x7F3AEF)
 
-  static var accentPointRed: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.3019607843, 0.2392156863, 1) : (1, 0.3019607843, 0.2392156863, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let accentPointRed = UIColor.festiCore(hex: 0xFF4D3D)
 
-  static var accentPointYellow: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.8509803922, 0.2392156863, 1) : (1, 0.8509803922, 0.2392156863, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let accentPointYellow = UIColor.festiCore(hex: 0xFFD93D)
 
-  static var backgroundAlternative: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0, 0, 0, 1) : (0.9137254902, 0.9137254902, 0.9333333333, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let backgroundAlternative = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x000000) : UIColor.festiCore(hex: 0xE9E9EE)
   }
 
-  static var backgroundElevated: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.1098039216, 0.1098039216, 0.1254901961, 1) : (1, 1, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let backgroundElevated = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x1C1C20) : UIColor.festiCore(hex: 0xFFFFFF)
   }
 
-  static var backgroundNavigation: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.1098039216, 0.1098039216, 0.1254901961, 1) : (1, 1, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let backgroundNavigation = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x1C1C20) : UIColor.festiCore(hex: 0xFFFFFF)
   }
 
-  static var backgroundNormal: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.0666666667, 0.0666666667, 0.0745098039, 1) : (0.9529411765, 0.9529411765, 0.9647058824, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let backgroundNormal = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x111113) : UIColor.festiCore(hex: 0xF3F3F6)
   }
 
-  static var fillNormal: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 0.1019607843) : (0.9490196078, 0.9490196078, 0.9568627451, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let fillNormal = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFFFFFF, alpha: 0x1A) : UIColor.festiCore(hex: 0xF2F2F4)
   }
 
-  static var fillSelected: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.3607843137, 0.3607843137, 0.4, 1) : (1, 1, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let fillSelected = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x5C5C66) : UIColor.festiCore(hex: 0xFFFFFF)
   }
 
-  static var fillStrong: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 0.2) : (0.8941176471, 0.8941176471, 0.9098039216, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let fillStrong = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFFFFFF, alpha: 0x33) : UIColor.festiCore(hex: 0xE4E4E8)
   }
 
-  static var interactionActive: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 0.0509803922) : (0.0666666667, 0.0666666667, 0.0745098039, 0.0509803922)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let interactionActive = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFFFFFF, alpha: 0x0D) : UIColor.festiCore(hex: 0x111113, alpha: 0x0D)
   }
 
-  static var interactionPressed: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 0.1019607843) : (0.0666666667, 0.0666666667, 0.0745098039, 0.1019607843)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let interactionPressed = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFFFFFF, alpha: 0x1A) : UIColor.festiCore(hex: 0x111113, alpha: 0x1A)
   }
 
-  static var inverseBackground: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 1) : (0.0666666667, 0.0666666667, 0.0745098039, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let inverseBackground = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFFFFFF) : UIColor.festiCore(hex: 0x111113)
   }
 
-  static var inverseLabel: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.0666666667, 0.0666666667, 0.0745098039, 1) : (1, 1, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let inverseLabel = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x111113) : UIColor.festiCore(hex: 0xFFFFFF)
   }
 
-  static var labelAssistive: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.662745098, 0.662745098, 0.6941176471, 1) : (0.5411764706, 0.5411764706, 0.5764705882, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let labelAssistive = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xA9A9B1) : UIColor.festiCore(hex: 0x8A8A93)
   }
 
-  static var labelDisable: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.1647058824, 0.1647058824, 0.1882352941, 1) : (0.7882352941, 0.7882352941, 0.8117647059, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let labelDisable = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x2A2A30) : UIColor.festiCore(hex: 0xC9C9CF)
   }
 
-  static var labelNeutral: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.7882352941, 0.7882352941, 0.8117647059, 1) : (0.3607843137, 0.3607843137, 0.4, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let labelNeutral = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xC9C9CF) : UIColor.festiCore(hex: 0x5C5C66)
   }
 
-  static var labelNormal: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 1) : (0.0666666667, 0.0666666667, 0.0745098039, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let labelNormal = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFFFFFF) : UIColor.festiCore(hex: 0x111113)
   }
 
-  static var labelStrong: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 1) : (0, 0, 0, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let labelStrong = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFFFFFF) : UIColor.festiCore(hex: 0x000000)
   }
 
-  static var lineNormal: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.1647058824, 0.1647058824, 0.1882352941, 1) : (0.8941176471, 0.8941176471, 0.9098039216, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let lineNormal = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x2A2A30) : UIColor.festiCore(hex: 0xE4E4E8)
   }
 
-  static var lineStrong: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.3607843137, 0.3607843137, 0.4, 1) : (0.7882352941, 0.7882352941, 0.8117647059, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let lineStrong = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x5C5C66) : UIColor.festiCore(hex: 0xC9C9CF)
   }
 
-  static var materialDimmer: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0, 0, 0, 0.6980392157) : (0, 0, 0, 0.5019607843)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let materialDimmer = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x000000, alpha: 0xB2) : UIColor.festiCore(hex: 0x000000, alpha: 0x80)
   }
 
-  static var materialGlass: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0, 0, 0, 0.2) : (1, 1, 1, 0.2)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let materialGlass = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x000000, alpha: 0x33) : UIColor.festiCore(hex: 0xFFFFFF, alpha: 0x33)
   }
 
-  static var primaryNormal: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.7764705882, 1, 0.2039215686, 1) : (0.0666666667, 0.0666666667, 0.0745098039, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let primaryNormal = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xC6FF34) : UIColor.festiCore(hex: 0x111113)
   }
 
-  static var primaryOnPrimary: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.0666666667, 0.0666666667, 0.0745098039, 1) : (1, 1, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let primaryOnPrimary = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x111113) : UIColor.festiCore(hex: 0xFFFFFF)
   }
 
-  static var secondaryNormal: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.6980392157, 0.5450980392, 1, 1) : (0.4980392157, 0.2274509804, 0.937254902, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let secondaryNormal = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xB28BFF) : UIColor.festiCore(hex: 0x7F3AEF)
   }
 
-  static var secondaryOnSecondary: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.0666666667, 0.0666666667, 0.0745098039, 1) : (1, 1, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let secondaryOnSecondary = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x111113) : UIColor.festiCore(hex: 0xFFFFFF)
   }
 
-  static var staticalphaBlack20: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0, 0, 0, 0.2) : (0, 0, 0, 0.2)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticalphaBlack20 = UIColor.festiCore(hex: 0x000000, alpha: 0x33)
 
-  static var staticalphaBlack40: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0, 0, 0, 0.4) : (0, 0, 0, 0.4)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticalphaBlack40 = UIColor.festiCore(hex: 0x000000, alpha: 0x66)
 
-  static var staticalphaBlack60: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0, 0, 0, 0.6) : (0, 0, 0, 0.6)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticalphaBlack60 = UIColor.festiCore(hex: 0x000000, alpha: 0x99)
 
-  static var staticalphaBlack80: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0, 0, 0, 0.8) : (0, 0, 0, 0.8)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticalphaBlack80 = UIColor.festiCore(hex: 0x000000, alpha: 0xCC)
 
-  static var staticalphaWhite20: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 0.2) : (1, 1, 1, 0.2)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticalphaWhite20 = UIColor.festiCore(hex: 0xFFFFFF, alpha: 0x33)
 
-  static var staticalphaWhite40: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 0.4) : (1, 1, 1, 0.4)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticalphaWhite40 = UIColor.festiCore(hex: 0xFFFFFF, alpha: 0x66)
 
-  static var staticalphaWhite60: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 0.6) : (1, 1, 1, 0.6)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticalphaWhite60 = UIColor.festiCore(hex: 0xFFFFFF, alpha: 0x99)
 
-  static var staticalphaWhite80: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 0.8) : (1, 1, 1, 0.8)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticalphaWhite80 = UIColor.festiCore(hex: 0xFFFFFF, alpha: 0xCC)
 
-  static var staticBlack: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0, 0, 0, 1) : (0, 0, 0, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticBlack = UIColor.festiCore(hex: 0x000000)
 
-  static var staticInk: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.0666666667, 0.0666666667, 0.0745098039, 1) : (0.0666666667, 0.0666666667, 0.0745098039, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticInk = UIColor.festiCore(hex: 0x111113)
 
-  static var staticLime: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.7764705882, 1, 0.2039215686, 1) : (0.7764705882, 1, 0.2039215686, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticLime = UIColor.festiCore(hex: 0xC6FF34)
 
-  static var staticPurpleTint: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.9647058824, 0.9490196078, 1, 1) : (0.9647058824, 0.9490196078, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticPurpleTint = UIColor.festiCore(hex: 0xF6F2FF)
 
-  static var staticWhite: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 1, 1, 1) : (1, 1, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
-  }
+  static let staticWhite = UIColor.festiCore(hex: 0xFFFFFF)
 
-  static var statusCautionary: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.6235294118, 0.0392156863, 1) : (1, 0.5843137255, 0, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let statusCautionary = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFF9F0A) : UIColor.festiCore(hex: 0xFF9500)
   }
 
-  static var statusInfo: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.0392156863, 0.5176470588, 1, 1) : (0, 0.4784313725, 1, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let statusInfo = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x0A84FF) : UIColor.festiCore(hex: 0x007AFF)
   }
 
-  static var statusNegative: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (1, 0.2705882353, 0.2274509804, 1) : (1, 0.231372549, 0.1882352941, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let statusNegative = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0xFF453A) : UIColor.festiCore(hex: 0xFF3B30)
   }
 
-  static var statusPositive: UIColor {
-    UIColor { traits in
-      let rgba: (CGFloat, CGFloat, CGFloat, CGFloat) = traits.userInterfaceStyle == .dark ? (0.1882352941, 0.8196078431, 0.3450980392, 1) : (0.2039215686, 0.7803921569, 0.3490196078, 1)
-      return UIColor(red: rgba.0, green: rgba.1, blue: rgba.2, alpha: rgba.3)
-    }
+  static let statusPositive = UIColor { traits in
+    traits.userInterfaceStyle == .dark ? UIColor.festiCore(hex: 0x30D158) : UIColor.festiCore(hex: 0x34C759)
   }
 
+}
+
+private extension UIColor {
+  static func festiCore(hex: UInt32, alpha: UInt8 = 0xFF) -> UIColor {
+    UIColor(
+      red: CGFloat((hex >> 16) & 0xFF) / 255,
+      green: CGFloat((hex >> 8) & 0xFF) / 255,
+      blue: CGFloat(hex & 0xFF) / 255,
+      alpha: CGFloat(alpha) / 255
+    )
+  }
 }
