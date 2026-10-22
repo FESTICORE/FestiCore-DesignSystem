@@ -33,6 +33,14 @@ FESTICORE 앱(iOS 우선, Android 확장)의 **Foundation 디자인 토큰**입�
 - **safe-area**는 디자인 참고값입니다. 실제 앱은 `safeAreaInsets`(iOS) / `WindowInsets`(Android) 런타임 값을 씁니다. iPhone Air(68)와 iPhone Duo 값은 확인이 필요합니다.
 - 폰트: Pretendard(OFL), Bagel Fat One(OFL). 앱에 번들해야 합니다.
 
+## iOS 토큰 생성
+
+Node 버전은 `.nvmrc`에 고정한다. `npm ci` 후 `npm run build`로 `generated/ios/`의 Swift API와 light/dark 색상 에셋을 갱신한다. 각 테마의 DTCG 입력을 Style Dictionary v4가 해석하고, 검증기와 전용 Swift/에셋 작성기가 그 결과를 직렬화한다. `npm test`는 별칭·테마·단위·공개 API 이름을 검사하고 `npm run check`는 커밋된 생성물과 원본의 일치를 확인한다. 디자인 토큰 변경 PR에는 생성물도 함께 커밋한다.
+
+생성 대상은 semantic color, spacing, radius, typography다. 원자 색은 별칭 해석에만 쓰며 gradient, breakpoint, opacity/state, safe-area는 출력하지 않는다. 폰트 파일은 저장소에 없으므로 iOS에서는 시스템 폰트로 대체하되 토큰의 폰트 이름은 API에 남긴다. `generated/ios/Sources`의 세 Swift 파일은 FestiCore-iOS `FestiCoreDesignSystem`의 기존 공개 API와 이름을 맞춘다. 손으로 작성한 SwiftUI 확장 파일은 생성 대상이 아니다.
+
+Figma에서 값을 고친 뒤 이 저장소의 JSON을 갱신하고 생성물을 함께 제출한다. 이후 iOS 저장소의 별도 동기화 워크플로가 커밋 SHA에 묶인 파일을 가져와 PR을 만든다.
+
 ## 변경 이력
 
 | 날짜 | 버전 | 내용 |
