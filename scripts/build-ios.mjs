@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import StyleDictionary from 'style-dictionary';
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -8,6 +9,59 @@ const outputRoot = process.env.FESTICORE_OUTPUT_ROOT ?? path.join(root, 'generat
 const reference = /^\{([^{}]+)\}$/;
 
 function fail(message) { throw new Error(message); }
+function parseUniqueJSON(file) {
+  const source = fs.readFileSync(file, 'utf8');
+  let offset = 0;
+  function spaces() { while (/\s/.test(source[offset] ?? '')) offset++; }
+  function quoted() {
+    const start = offset++;
+    while (offset < source.length) {
+      if (source[offset] === '\\') { offset += 2; continue; }
+      if (source[offset++] === '"') return JSON.parse(source.slice(start, offset));
+    }
+    fail(`Invalid JSON string: ${file}`);
+  }
+  function value() {
+    spaces();
+    if (source[offset] === '{') {
+      offset++;
+      spaces();
+      const keys = new Set();
+      while (source[offset] !== '}' && offset < source.length) {
+        if (source[offset] !== '"') fail(`Invalid JSON object: ${file}`);
+        const key = quoted();
+        if (keys.has(key)) fail(`Duplicate JSON key: ${key} in ${file}`);
+        keys.add(key);
+        spaces();
+        if (source[offset++] !== ':') fail(`Invalid JSON object: ${file}`);
+        value();
+        spaces();
+        if (source[offset] !== ',') break;
+        offset++;
+        spaces();
+      }
+      if (source[offset++] !== '}') fail(`Invalid JSON object: ${file}`);
+    } else if (source[offset] === '[') {
+      offset++;
+      spaces();
+      while (source[offset] !== ']' && offset < source.length) {
+        value();
+        spaces();
+        if (source[offset] !== ',') break;
+        offset++;
+      }
+      if (source[offset++] !== ']') fail(`Invalid JSON array: ${file}`);
+    } else if (source[offset] === '"') quoted();
+    else {
+      const start = offset;
+      while (offset < source.length && !/[\s,\]}]/.test(source[offset])) offset++;
+      if (start === offset) fail(`Invalid JSON value: ${file}`);
+    }
+    spaces();
+  }
+  value();
+  return JSON.parse(source);
+}
 function leafEntries(node, prefix = [], result = new Map()) {
   for (const [key, value] of Object.entries(node)) {
     if (key.startsWith('$')) continue;
@@ -23,7 +77,7 @@ function setPath(object, keys, value) {
   for (const key of keys.slice(0, -1)) cursor = cursor[key] ??= {};
   cursor[keys.at(-1)] = value;
 }
-function loadTheme(theme, sets = JSON.parse(fs.readFileSync(path.join(tokenRoot, '$themes.json'), 'utf8'))) {
+function loadTheme(theme, sets = parseUniqueJSON(path.join(tokenRoot, '$themes.json'))) {
   const selected = sets.find(item => item.id === theme)?.selectedTokenSets;
   if (!selected) fail(`Missing theme: ${theme}`);
   const all = new Map();
@@ -31,9 +85,10 @@ function loadTheme(theme, sets = JSON.parse(fs.readFileSync(path.join(tokenRoot,
   for (const [set, mode] of Object.entries(selected)) {
     if (!['source', 'enabled', 'disabled'].includes(mode)) fail(`Invalid set mode: ${set} ${mode}`);
     if (mode === 'disabled') continue;
-    if (!/^[a-z0-9/.-]+$/.test(set)) fail(`Unsafe token set: ${set}`);
-    const file = path.join(tokenRoot, `${set}.json`);
-    const entries = leafEntries(JSON.parse(fs.readFileSync(file, 'utf8')));
+    if (!/^[a-z0-9.-]+(?:\/[a-z0-9.-]+)*$/.test(set) || set.split('/').some(part => part === '.' || part === '..')) fail(`Unsafe token set: ${set}`);
+    const file = path.resolve(tokenRoot, `${set}.json`);
+    if (!file.startsWith(`${path.resolve(tokenRoot)}${path.sep}`)) fail(`Unsafe token set: ${set}`);
+    const entries = leafEntries(parseUniqueJSON(file));
     for (const [name, token] of entries) {
       if (all.has(name)) fail(`Duplicate token: ${name} in ${theme}`);
       if (typeof token.$type !== 'string') fail(`Missing type: ${name}`);
@@ -205,6 +260,6 @@ export async function buildIOS() {
   generateTypography(light, typography);
   return { colors: colors.length, spacing: spacing.length, radius: radius.length, typography: typography.length };
 }
-if (process.argv[1] && path.resolve(process.argv[1]) === new URL(import.meta.url).pathname) {
+if (process.argv[1] && fs.realpathSync(path.resolve(process.argv[1])) === fs.realpathSync(fileURLToPath(import.meta.url))) {
   buildIOS().then(counts => console.log(`Generated iOS tokens: ${JSON.stringify(counts)}`)).catch(error => { console.error(error); process.exitCode = 1; });
 }

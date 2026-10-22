@@ -26,6 +26,15 @@ function edit(f, filename, change) {
   fs.writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`);
 }
 function cleanup(f) { fs.rmSync(f.dir, { recursive: true, force: true }); }
+function expectFailure(change, message) {
+  const f = fixture();
+  try {
+    change(f);
+    const result = run(f);
+    assert.notEqual(result.status, 0, 'Invalid tokens unexpectedly built');
+    assert.match(result.stderr, message);
+  } finally { cleanup(f); }
+}
 
 test('light/dark Swift API and assets are deterministic, source tokens stay internal', () => {
   const f = fixture();
@@ -90,4 +99,43 @@ test('invalid units, output names and enabled atomic colors fail', () => {
     edit(f, '$themes.json', json => { for (const theme of json) theme.selectedTokenSets['color/atomic'] = 'enabled'; });
     assert.match(run(f).stderr, /Atomic color is enabled/);
   } finally { cleanup(f); }
+});
+
+test('build CLI runs from a path with spaces and non-ASCII characters', () => {
+  const f = fixture();
+  try {
+    const repo = path.join(f.dir, 'space path 한국어');
+    fs.mkdirSync(path.join(repo, 'tests/fixtures'), { recursive: true });
+    fs.cpSync(path.join(root, 'scripts'), path.join(repo, 'scripts'), { recursive: true });
+    fs.cpSync(f.tokens, path.join(repo, 'tokens'), { recursive: true });
+    fs.copyFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), path.join(repo, 'tests/fixtures/public-color-names.json'));
+    fs.symlinkSync(path.join(root, 'node_modules'), path.join(repo, 'node_modules'));
+    const result = spawnSync(process.execPath, [path.join(repo, 'scripts/build-ios.mjs')], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Generated iOS tokens/);
+    assert.equal(fs.existsSync(path.join(repo, 'generated/ios/Sources/FestiCoreColor.swift')), true);
+  } finally { cleanup(f); }
+});
+
+test('duplicate token paths and duplicate keys inside JSON fail', () => {
+  expectFailure(f => {
+    fs.writeFileSync(path.join(f.tokens, 'duplicate.json'), JSON.stringify({ color: { primary: { normal: { $type: 'color', $value: '#FFFFFF' } } } }));
+    edit(f, '$themes.json', json => { json[0].selectedTokenSets.duplicate = 'enabled'; });
+  }, /Duplicate token: color\.primary\.normal/);
+  expectFailure(f => {
+    const file = path.join(f.tokens, 'color/semantic.light.json');
+    fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('"normal": {', '"normal": {"$type":"color","$value":"#FFFFFF"}, "normal": {'));
+  }, /Duplicate JSON key: normal/);
+});
+
+test('invalid color, dimension and typography values fail', () => {
+  expectFailure(f => edit(f, 'color/atomic.json', json => { json.color.atomic.common.white.$value = '#GGG'; }), /Invalid hex color/);
+  expectFailure(f => edit(f, 'foundation.json', json => { json.spacing.margin['m-2'].$value = '2pt'; }), /Invalid px dimension/);
+  expectFailure(f => edit(f, 'typography.json', json => { json['font-weight'].bold.$value = 600; }), /Unsupported font weight/);
+  expectFailure(f => edit(f, 'typography.json', json => { json['text-style'].base.body.regular.$value.lineHeight = '150%'; }), /Invalid number: .*lineHeight/);
+  expectFailure(f => edit(f, 'typography.json', json => { json['text-style'].base.body.regular.$value.fontFamily = ['Unknown Font']; }), /Unsupported family/);
+});
+
+test('token set path traversal fails before reading a file', () => {
+  expectFailure(f => edit(f, '$themes.json', json => { json[0].selectedTokenSets['../../outside'] = 'enabled'; }), /Unsafe token set/);
 });
