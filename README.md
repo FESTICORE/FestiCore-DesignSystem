@@ -37,11 +37,19 @@ FESTICORE 앱(iOS 우선, Android 확장)의 **Foundation 디자인 토큰**입�
 
 Node 버전은 `.nvmrc`에 고정한다. `npm ci` 후 `npm run build`로 `generated/ios/Sources/`의 Swift API를 갱신한다. 각 테마의 DTCG 입력을 Style Dictionary v4가 해석하고, 검증기와 Swift 작성기가 그 결과를 직렬화한다. 색상은 light/dark에 따라 바뀌는 `UIColor`와 이를 감싼 `Color`·`ShapeStyle` 확장 코드로 생성하며 색상 에셋은 만들지 않는다. `npm test`는 별칭·테마·단위·공개 API 이름을 검사하고 `npm run check`는 커밋된 생성물과 원본의 일치를 확인한다. 디자인 토큰 변경 PR에는 생성물도 함께 커밋한다.
 
-생성 대상은 semantic color, spacing, radius, typography다. 원자 색은 별칭 해석에만 쓰며 gradient, breakpoint, opacity/state, safe-area는 출력하지 않는다. 폰트 파일은 저장소에 없으므로 iOS에서는 시스템 폰트로 대체하되 토큰의 폰트 이름은 API에 남긴다. `generated/ios/Sources`의 다섯 Swift 파일은 FestiCore-iOS의 `FestiCoreDesignKit`에서 사용한다. 손으로 작성한 SwiftUI 확장 파일은 생성 대상이 아니다.
+생성 대상은 semantic color, spacing, radius, typography다. 원자 색은 별칭 해석에만 쓰며 gradient, breakpoint, opacity/state, safe-area는 출력하지 않는다. `generated/ios/Sources`의 다섯 Swift 파일은 FestiCore-iOS의 `FestiCoreDesignKit/Sources/Token`에 역할별로 동기화한다. DesignSystem 저장소는 폰트 파일을 배포하지 않고, iOS 디자인 모듈이 Pretendard를 리소스로 등록한다. 손으로 작성한 SwiftUI 확장 파일은 생성 대상이 아니다.
+
+```swift
+Text("축제")
+  .foregroundStyle(.labelNormal)
+  .background(Color.backgroundNormal)
+```
 
 Figma에서 값을 고친 뒤 이 저장소의 JSON을 갱신하고 생성물을 함께 제출한다. 이후 iOS 저장소의 별도 동기화 워크플로가 커밋 SHA에 묶인 파일을 가져와 PR을 만든다.
 
 ## 변경 이력
+
+자동화와 코드 컬러 변경 내역은 [CHANGELOG.md](CHANGELOG.md)에 기록한다.
 
 | 날짜 | 버전 | 내용 |
 | --- | --- | --- |

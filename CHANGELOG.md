@@ -1,0 +1,22 @@
+# 변경 이력
+
+## 2026-10-22 — iOS 컬러 코드 생성
+
+- FestiCore의 light/dark semantic 토큰을 `UIColor`, SwiftUI `Color`, `ShapeStyle` 확장으로 생성합니다. 화면은 semantic 이름을 코드에서 직접 사용합니다.
+- 기존 `FestiCoreColor` enum과 색상 `.xcassets` 생성을 제거했습니다. 원자 색은 semantic 별칭을 해석할 때만 사용합니다.
+- 생성 파일에 파일명·모듈명·고정 작성자 표기를 넣고, 잘못된 토큰으로 생성이 실패하면 기존 산출물을 보존합니다.
+- iOS 소비 모듈 이름을 `FestiCoreDesignKit`으로 정했습니다. 생성된 다섯 Swift 파일은 iOS 저장소에서 `Sources/Token`의 역할별 경로로 동기화합니다.
+
+## 2026-10-22 — 토큰 자동화
+
+- DTCG 원본의 테마, 별칭, 타입, 단위, 공개 색상 이름을 검증합니다.
+- iOS semantic color, spacing, radius, typography Swift 소스를 결정적으로 생성하고 CI에서 생성물 일치를 확인합니다.
+
+## 2026-10-22 — Foundation 토큰 0.2.0
+
+- Paper 배경을 Mist로 통일하고 Ink 400, Fill/Selected, Static Alpha, Material/Glass, Static/Purple Tint, Margin m-2·m-6 등을 추가했습니다.
+- 다크 Accent Background와 라이트 그라디언트 배경값을 조정했습니다.
+
+## 2026-10-21 — Foundation 토큰 0.1.0
+
+- Figma Design System v1의 Foundation 토큰을 처음 내보냈습니다.
