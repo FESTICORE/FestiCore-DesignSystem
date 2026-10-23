@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
-import { buildIOS } from './build-ios.mjs';
+import { buildIOS } from './build-ios.ts';
 
 if (process.env.FESTICORE_OUTPUT_ROOT) throw new Error('FESTICORE_OUTPUT_ROOT is not supported by check');
 const root = path.resolve(import.meta.dirname, '..');

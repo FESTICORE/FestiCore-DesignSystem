@@ -7,6 +7,14 @@ const root = path.resolve(import.meta.dirname, '..');
 const tokenRoot = path.join(root, 'tokens');
 const outputRoot = path.join(root, 'generated/ios');
 const reference = /^\{([^{}]+)\}$/;
+type Token = { $type: string; $value: unknown };
+type Theme = {
+  raw: Record<string, unknown>;
+  all: Map<string, Token>;
+  enabled: Set<string>;
+  resolved: Map<string, any>;
+};
+type SwiftOutputs = Map<string, string>;
 
 function fail(message) { throw new Error(message); }
 function parseUniqueJSON(file) {
@@ -82,11 +90,11 @@ function setPath(object, keys, value) {
   for (const key of keys.slice(0, -1)) cursor = cursor[key] ??= {};
   cursor[keys.at(-1)] = value;
 }
-function loadTheme(theme, sets = parseUniqueJSON(path.join(tokenRoot, '$themes.json'))) {
-  const selected = sets.find(item => item.id === theme)?.selectedTokenSets;
+function loadTheme(theme: 'light' | 'dark', sets = parseUniqueJSON(path.join(tokenRoot, '$themes.json'))): Theme {
+  const selected = sets.find(item => item.id === theme)?.selectedTokenSets as Record<string, string> | undefined;
   if (!selected) fail(`Missing theme: ${theme}`);
-  const all = new Map();
-  const enabled = new Set();
+  const all = new Map<string, Token>();
+  const enabled = new Set<string>();
   for (const [set, mode] of Object.entries(selected)) {
     if (!['source', 'enabled', 'disabled'].includes(mode)) fail(`Invalid set mode: ${set} ${mode}`);
     if (mode === 'disabled') continue;
@@ -101,8 +109,8 @@ function loadTheme(theme, sets = parseUniqueJSON(path.join(tokenRoot, '$themes.j
       if (mode === 'enabled') enabled.add(name);
     }
   }
-  const visiting = new Set();
-  const resolved = new Map();
+  const visiting = new Set<string>();
+  const resolved = new Map<string, any>();
   function resolve(name) {
     if (resolved.has(name)) return resolved.get(name);
     if (visiting.has(name)) fail(`Circular alias: ${name}`);
@@ -130,7 +138,7 @@ function loadTheme(theme, sets = parseUniqueJSON(path.join(tokenRoot, '$themes.j
     return value;
   }
   for (const name of all.keys()) resolve(name);
-  const raw = /** @type {Record<string, any>} */ ({});
+  const raw: Record<string, unknown> = {};
   for (const [name, token] of all) setPath(raw, name.split('.'), token);
   return { raw, all, enabled, resolved };
 }
@@ -171,7 +179,7 @@ function hexColor(value, label) {
   const alpha = hex.length === 8 ? `, alpha: 0x${hex.slice(6, 8)}` : '';
   return `UIColor.festiCore(hex: 0x${hex.slice(0, 6)}${alpha})`;
 }
-function collectOutput(outputs, relative, content) {
+function collectOutput(outputs: SwiftOutputs, relative: string, content: string) {
   outputs.set(relative, content);
 }
 function swiftHeader(filename) {
@@ -232,7 +240,7 @@ function generateColors(light, dark, names, outputs) {
   collectOutput(outputs, 'Sources/Colors.swift', colorLines.join('\n'));
   collectOutput(outputs, 'Sources/ShapeStyle+.swift', shapeLines.join('\n'));
 }
-function generateLayout(light, spacing, radius, outputs) {
+function generateLayout(light, spacing, radius, disabledOpacity, outputs) {
   const lines = [...swiftHeader('FestiCoreLayout.swift'), 'import CoreGraphics', '', 'public enum FestiCoreSpacing {'];
   for (const name of spacing) {
     if (light.all.get(name).$type !== 'dimension') fail(`Invalid spacing type: ${name}`);
@@ -243,13 +251,13 @@ function generateLayout(light, spacing, radius, outputs) {
     if (light.all.get(name).$type !== 'dimension') fail(`Invalid radius type: ${name}`);
     lines.push(`  public static let ${swiftName(name, 'radius')}: CGFloat = ${format(dimension(light.resolved.get(name), name))}`);
   }
-  lines.push('}', '');
+  lines.push('}', '', '// 비활성 요소 전체에 적용한다. pressed·active는 semantic interaction 색을 사용한다.', 'public enum FestiCoreState {', `  public static let disabledOpacity: CGFloat = ${format(number(disabledOpacity, 'state.disabled'))}`, '}', '');
   collectOutput(outputs, 'Sources/FestiCoreLayout.swift', lines.join('\n'));
 }
 function generateTypography(light, names, outputs) {
   const lines = [...swiftHeader('FestiCoreTypography.swift'), 'import UIKit', '', 'public struct FestiCoreTextStyle {',
     '  public let size: CGFloat', '  public let weight: UIFont.Weight', '  public let lineHeight: CGFloat', '  public let letterSpacing: CGFloat', '  public let fontFamily: String', '',
-    '  public var font: UIFont { UIFont.systemFont(ofSize: size, weight: weight) }', '  public var lineSpacing: CGFloat { max(0, size * lineHeight - font.lineHeight) }', '',
+    '  // 실제 서체와 줄 간격은 앱에 번들된 폰트로 계산한다.',
     '  public init(size: CGFloat, weight: UIFont.Weight, lineHeight: CGFloat, letterSpacing: CGFloat, fontFamily: String) {',
     '    self.size = size', '    self.weight = weight', '    self.lineHeight = lineHeight', '    self.letterSpacing = letterSpacing', '    self.fontFamily = fontFamily', '  }', '}', '', '@MainActor public enum FestiCoreTypography {'];
   const families = ['base', 'point'];
@@ -258,7 +266,7 @@ function generateTypography(light, names, outputs) {
     if (!Array.isArray(value) || typeof value[0] !== 'string' || !value[0]) fail(`Invalid font family: ${group}`);
     lines.push(`  public static let ${group}FontFamily = ${JSON.stringify(value[0])}`);
   }
-  lines.push('  // 폰트 파일을 포함하기 전까지 시스템 폰트를 사용한다.');
+  lines.push('  // letterSpacing은 em × fontSize로 계산한 pt 값이다.');
   for (const name of names) {
     if (light.all.get(name).$type !== 'typography') fail(`Invalid typography type: ${name}`);
     const style = light.resolved.get(name);
@@ -295,13 +303,15 @@ export async function buildIOS() {
   if (colors.some(name => name.startsWith('color.atomic.'))) fail('Atomic color is enabled for output');
   const spacing = samePathsAndValues(light, dark, 'spacing');
   const radius = samePathsAndValues(light, dark, 'radius');
+  const state = samePathsAndValues(light, dark, 'state');
+  if (!state.includes('state.disabled')) fail('Missing state.disabled');
   const typography = samePathsAndValues(light, dark, 'text-style');
   for (const [group, names] of [['color',colors],['spacing',spacing],['radius',radius],['text-style',typography]]) assertNames(names, group, group);
   const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
   if (JSON.stringify(colors.map(name => swiftName(name, 'color')).sort()) !== JSON.stringify(snapshot)) fail('Public color names differ from iOS API snapshot');
   const outputs = new Map();
   generateColors(light, dark, colors, outputs);
-  generateLayout(light, spacing, radius, outputs);
+  generateLayout(light, spacing, radius, light.resolved.get('state.disabled'), outputs);
   generateTypography(light, typography, outputs);
   clearGeneratedOutput();
   for (const [relative, content] of outputs) {

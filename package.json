@@ -6,8 +6,8 @@
     "node": ">=22 <23"
   },
   "scripts": {
-    "build": "node scripts/build-ios.mjs",
-    "check": "node scripts/check-ios.mjs",
+    "build": "node scripts/build-ios.ts",
+    "check": "node scripts/check-ios.ts",
     "test": "node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
