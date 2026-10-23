@@ -32,3 +32,8 @@ public enum FestiCoreRadius {
   public static let r4: CGFloat = 4
   public static let r8: CGFloat = 8
 }
+
+// 비활성 요소 전체에 적용한다. pressed·active는 semantic interaction 색을 사용한다.
+public enum FestiCoreState {
+  public static let disabledOpacity: CGFloat = 0.3
+}

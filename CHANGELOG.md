@@ -1,5 +1,11 @@
 # 변경 이력
 
+## 2026-10-23 — TypeScript iOS 생성기와 Foundation 상태
+
+- iOS 토큰 생성기와 생성물 검증 스크립트를 TypeScript로 전환하고 Node 22 타입 검사를 유지합니다.
+- `state.disabled`의 30% opacity를 Swift 상수로 생성합니다. pressed·active는 semantic interaction 색, dimmed는 semantic dimmer 색을 사용합니다.
+- 생성된 타이포그래피에서 시스템 서체 및 그 기준 줄 간격을 제거합니다. iOS 앱은 번들된 Pretendard·Bagel Fat One의 실제 폰트 메트릭을 사용합니다.
+
 ## 2026-10-22 — UIColor 코드 정리
 
 - UIKit 색상은 DDD와 같은 `static let` 및 hex 코드 형식으로 생성합니다. Light/Dark 전환과 반투명 alpha는 그대로 적용합니다.

@@ -8,7 +8,8 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
     "types": ["node"]
   },
-  "include": ["scripts/**/*.mjs", "tests/**/*.mjs"]
+  "include": ["scripts/**/*.ts", "tests/**/*.mjs"]
 }

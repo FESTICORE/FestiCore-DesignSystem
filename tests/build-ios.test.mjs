@@ -20,7 +20,7 @@ function fixture(repoName = 'repo') {
   return { dir, repo, tokens, output };
 }
 function run(f) {
-  return spawnSync(process.execPath, [path.join(f.repo, 'scripts/build-ios.mjs')], { encoding: 'utf8' });
+  return spawnSync(process.execPath, [path.join(f.repo, 'scripts/build-ios.ts')], { encoding: 'utf8' });
 }
 function edit(f, filename, change) {
   const file = path.join(f.tokens, filename);
@@ -79,6 +79,9 @@ test('light/dark Swift color extensions are deterministic without assets', () =>
     assert.match(typography, /letterSpacing: -0\.884/);
     assert.match(typography, /baseBodyRegular = FestiCoreTextStyle\(size: 17, weight: \.regular, lineHeight: 1\.529,/);
     assert.match(typography, /fontFamily: baseFontFamily/);
+    assert.match(typography, /pointFontFamily = "Bagel Fat One"/);
+    assert.doesNotMatch(typography, /UIFont\.systemFont|public var lineSpacing/);
+    assert.match(layout, /disabledOpacity: CGFloat = 0\.3/);
     const names = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
     for (const symbol of names) {
       assert.match(uiColor, new RegExp(`static let ${symbol} = UIColor(?: \\{|\\.festiCore\\()`));
@@ -90,10 +93,10 @@ test('light/dark Swift color extensions are deterministic without assets', () =>
     assert.deepEqual(layoutSymbols.sort(), [
       'marginM2','marginM4','marginM6','marginM8','marginM12','marginM16','marginM20','marginM24',
       'paddingP4','paddingP8','paddingP12','paddingP16','paddingP20','paddingP24',
-      'r4','r8','r12','r16','r20','r24'
+      'r4','r8','r12','r16','r20','r24','disabledOpacity'
     ].sort());
     assert.equal([...typography.matchAll(/public static let \w+ = FestiCoreTextStyle/g)].length, 37);
-    assert.doesNotMatch(layout + typography, /public static let (?:opacity|state|breakpoint|safeArea|gradient)/i);
+    assert.doesNotMatch(layout + typography, /public static let (?:opacity|breakpoint|safeArea|gradient)/i);
     const before = uiColor + color + shape + layout + typography;
     result = run(f);
     assert.equal(result.status, 0, result.stderr);
@@ -206,10 +209,10 @@ test('output overrides and redirected generated folders cannot delete data', () 
     const protectedFile = path.join(f.dir, 'keep.txt');
     fs.writeFileSync(protectedFile, 'keep');
     const env = { ...process.env, FESTICORE_OUTPUT_ROOT: f.dir };
-    const build = spawnSync(process.execPath, [path.join(f.repo, 'scripts/build-ios.mjs')], { encoding: 'utf8', env });
+    const build = spawnSync(process.execPath, [path.join(f.repo, 'scripts/build-ios.ts')], { encoding: 'utf8', env });
     assert.notEqual(build.status, 0);
     assert.match(build.stderr, /FESTICORE_OUTPUT_ROOT is not supported/);
-    const check = spawnSync(process.execPath, [path.join(root, 'scripts/check-ios.mjs')], { encoding: 'utf8', env, cwd: f.dir });
+    const check = spawnSync(process.execPath, [path.join(root, 'scripts/check-ios.ts')], { encoding: 'utf8', env, cwd: f.dir });
     assert.notEqual(check.status, 0);
     assert.match(check.stderr, /FESTICORE_OUTPUT_ROOT is not supported/);
     assert.equal(fs.readFileSync(protectedFile, 'utf8'), 'keep');
