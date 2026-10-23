@@ -51,31 +51,28 @@ function expectFailure(change, message) {
   } finally { cleanup(f); }
 }
 
-test('light/dark Swift color extensions are deterministic without assets', () => {
+test('light/dark semantic colors are deterministic without assets', () => {
   const f = fixture();
   try {
     let result = run(f);
     assert.equal(result.status, 0, result.stderr);
-    const uiColor = fs.readFileSync(path.join(f.output, 'Sources/UIColors.swift'), 'utf8');
-    const color = fs.readFileSync(path.join(f.output, 'Sources/Colors.swift'), 'utf8');
+    const semantic = fs.readFileSync(path.join(f.output, 'Sources/FestiCoreSemanticColor.swift'), 'utf8');
     const shape = fs.readFileSync(path.join(f.output, 'Sources/ShapeStyle+.swift'), 'utf8');
     const layout = fs.readFileSync(path.join(f.output, 'Sources/FestiCoreLayout.swift'), 'utf8');
     const typography = fs.readFileSync(path.join(f.output, 'Sources/FestiCoreTypography.swift'), 'utf8');
-    for (const [filename, content] of [['UIColors.swift', uiColor], ['Colors.swift', color], ['ShapeStyle+.swift', shape], ['FestiCoreLayout.swift', layout], ['FestiCoreTypography.swift', typography]]) {
+    for (const [filename, content] of [['FestiCoreSemanticColor.swift', semantic], ['ShapeStyle+.swift', shape], ['FestiCoreLayout.swift', layout], ['FestiCoreTypography.swift', typography]]) {
       assert.ok(content.includes(`//  ${filename}\n//  FestiCoreDesignKit\n`));
       assert.match(content, /Created by FestiCore-DesignSystem generator\./);
     }
-    assert.match(uiColor, /public extension UIColor/);
-    assert.match(uiColor, /static let primaryNormal = UIColor \{ traits in/);
-    assert.match(uiColor, /traits\.userInterfaceStyle == \.dark/);
-    assert.match(uiColor, /UIColor\.festiCore\(hex: 0x[0-9A-F]{6}/);
-    assert.match(uiColor, /UIColor\.festiCore\(hex: 0x3D7BFF, alpha: 0x1A\)/);
-    assert.match(uiColor, /static let staticWhite = UIColor\.festiCore\(hex: 0xFFFFFF\)/);
-    assert.match(color, /public extension Color/);
-    assert.match(color, /static var primaryNormal: Color \{ Color\(uiColor: UIColor\.primaryNormal\) \}/);
-    assert.match(shape, /public extension ShapeStyle where Self == Color/);
-    assert.match(shape, /static var primaryNormal: Color \{ Color\.primaryNormal \}/);
-    assert.doesNotMatch(uiColor + color + shape, /atomic|FestiCoreColor \{/);
+    assert.match(semantic, /public struct FestiCoreSemanticColor: Sendable/);
+    assert.match(semantic, /public var color: Color \{ Color\(uiColor: uiColor\) \}/);
+    assert.match(semantic, /public var uiColor: UIColor/);
+    assert.match(semantic, /traits\.userInterfaceStyle == \.dark/);
+    assert.match(semantic, /UIColor\(hex: isDark \? darkHex : lightHex/);
+    assert.match(semantic, /static let primaryNormal = FestiCoreSemanticColor\(lightHex: 0x[0-9A-F]{6}/);
+    assert.match(semantic, /darkHex: 0x3D7BFF, darkAlpha: 0x1A/);
+    assert.match(shape, /static var primaryNormal: Color \{ FestiCoreSemanticColor\.primaryNormal\.color \}/);
+    assert.doesNotMatch(semantic, /atomic|public extension Color|public extension ShapeStyle/);
     assert.match(typography, /letterSpacing: -0\.884/);
     assert.match(typography, /baseBodyRegular = FestiCoreTextStyle\(size: 17, weight: \.regular, lineHeight: 1\.529,/);
     assert.match(typography, /fontFamily: baseFontFamily/);
@@ -84,9 +81,8 @@ test('light/dark Swift color extensions are deterministic without assets', () =>
     assert.match(layout, /disabledOpacity: CGFloat = 0\.3/);
     const names = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
     for (const symbol of names) {
-      assert.match(uiColor, new RegExp(`static let ${symbol} = UIColor(?: \\{|\\.festiCore\\()`));
-      assert.match(color, new RegExp(`static var ${symbol}: Color \\{ Color\\(uiColor: UIColor\\.${symbol}\\) \\}`));
-      assert.match(shape, new RegExp(`static var ${symbol}: Color \\{ Color\\.${symbol} \\}`));
+      assert.match(semantic, new RegExp(`static let ${symbol} = FestiCoreSemanticColor\\(`));
+      assert.match(shape, new RegExp(`static var ${symbol}: Color \\{ FestiCoreSemanticColor\\.${symbol}\\.color \\}`));
     }
     assert.equal(fs.existsSync(path.join(f.output, 'Assets')), false);
     const layoutSymbols = [...layout.matchAll(/public static let (\w+): CGFloat/g)].map(match => match[1]);
@@ -97,10 +93,11 @@ test('light/dark Swift color extensions are deterministic without assets', () =>
     ].sort());
     assert.equal([...typography.matchAll(/public static let \w+ = FestiCoreTextStyle/g)].length, 37);
     assert.doesNotMatch(layout + typography, /public static let (?:opacity|breakpoint|safeArea|gradient)/i);
-    const before = uiColor + color + shape + layout + typography;
+    const before = semantic + shape + layout + typography;
     result = run(f);
     assert.equal(result.status, 0, result.stderr);
-    assert.equal(['UIColors.swift', 'Colors.swift', 'ShapeStyle+.swift', 'FestiCoreLayout.swift', 'FestiCoreTypography.swift'].map(filename => fs.readFileSync(path.join(f.output, 'Sources', filename), 'utf8')).join(''), before);
+    assert.equal(['FestiCoreSemanticColor.swift', 'ShapeStyle+.swift', 'FestiCoreLayout.swift', 'FestiCoreTypography.swift'].map(filename => fs.readFileSync(path.join(f.output, 'Sources', filename), 'utf8')).join(''), before);
+    assert.equal(fs.existsSync(path.join(f.output, 'Sources/Colors.swift')), false);
     assert.equal(fs.existsSync(path.join(f.output, 'Sources/FestiCoreGradient.swift')), false);
   } finally { cleanup(f); }
 });
@@ -170,7 +167,7 @@ test('build CLI runs from a path with spaces and non-ASCII characters', () => {
     const result = run(f);
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /Generated iOS tokens/);
-    assert.equal(fs.existsSync(path.join(f.output, 'Sources/UIColors.swift')), true);
+    assert.equal(fs.existsSync(path.join(f.output, 'Sources/FestiCoreSemanticColor.swift')), true);
   } finally { cleanup(f); }
 });
 
