@@ -176,8 +176,7 @@ function format(value) { return Number(value.toFixed(10)).toString(); }
 function hexColor(value, label) {
   if (typeof value !== 'string' || !/^#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?$/.test(value)) fail(`Invalid hex color: ${label}`);
   const hex = value.slice(1).toUpperCase();
-  const alpha = hex.length === 8 ? `, alpha: 0x${hex.slice(6, 8)}` : '';
-  return `UIColor.festiCore(hex: 0x${hex.slice(0, 6)}${alpha})`;
+  return { rgb: `0x${hex.slice(0, 6)}`, alpha: hex.length === 8 ? `0x${hex.slice(6, 8)}` : '0xFF' };
 }
 function collectOutput(outputs: SwiftOutputs, relative: string, content: string) {
   outputs.set(relative, content);
@@ -205,27 +204,37 @@ function clearGeneratedOutput() {
   fs.rmSync(outputRoot, { recursive: true, force: true });
 }
 function generateColors(light, dark, names, outputs) {
-  const uiLines = [...swiftHeader('UIColors.swift'), 'import UIKit', '', 'public extension UIColor {'];
-  const colorLines = [...swiftHeader('Colors.swift'), 'import SwiftUI', '', 'public extension Color {'];
-  const shapeLines = [...swiftHeader('ShapeStyle+.swift'), 'import SwiftUI', '', 'public extension ShapeStyle where Self == Color {'];
+  const lines = [...swiftHeader('FestiCoreSemanticColor.swift'), 'import SwiftUI', 'import UIKit', '',
+    '// 화면에는 semantic 색만 노출한다. hex 값은 Light/Dark 토큰에서 생성된다.',
+    'public struct FestiCoreSemanticColor: Sendable {',
+    '  private let lightHex: UInt32', '  private let lightAlpha: UInt8',
+    '  private let darkHex: UInt32', '  private let darkAlpha: UInt8', '',
+    '  private init(lightHex: UInt32, lightAlpha: UInt8, darkHex: UInt32, darkAlpha: UInt8) {',
+    '    self.lightHex = lightHex', '    self.lightAlpha = lightAlpha',
+    '    self.darkHex = darkHex', '    self.darkAlpha = darkAlpha', '  }', '',
+    '  public var color: Color { Color(uiColor: uiColor) }', '',
+    '  public var uiColor: UIColor {',
+    '    UIColor { traits in',
+    '      let isDark = traits.userInterfaceStyle == .dark',
+    '      return UIColor(hex: isDark ? darkHex : lightHex, alpha: isDark ? darkAlpha : lightAlpha)',
+    '    }', '  }', '}', '',
+    'public extension FestiCoreSemanticColor {'];
+  const shapeLines = [...swiftHeader('ShapeStyle+.swift'), 'import SwiftUI', '',
+    '// semantic 색의 동적 UIColor를 사용하므로 시스템 다크 모드에도 함께 반응한다.',
+    'public extension ShapeStyle where Self == Color {'];
   for (const name of names) {
     const symbol = swiftName(name, 'color');
     const lightHex = light.resolved.get(name), darkHex = dark.resolved.get(name);
     if (light.all.get(name).$type !== 'color' || dark.all.get(name).$type !== 'color') fail(`Invalid color type: ${name}`);
     const l = hexColor(lightHex, name), d = hexColor(darkHex, name);
-    if (lightHex.toUpperCase() === darkHex.toUpperCase()) {
-      uiLines.push(`  static let ${symbol} = ${l}`, '');
-    } else {
-      uiLines.push(`  static let ${symbol} = UIColor { traits in`, `    traits.userInterfaceStyle == .dark ? ${d} : ${l}`, '  }', '');
-    }
-    colorLines.push(`  static var ${symbol}: Color { Color(uiColor: UIColor.${symbol}) }`);
-    shapeLines.push(`  static var ${symbol}: Color { Color.${symbol} }`);
+    lines.push(`  static let ${symbol} = FestiCoreSemanticColor(lightHex: ${l.rgb}, lightAlpha: ${l.alpha}, darkHex: ${d.rgb}, darkAlpha: ${d.alpha})`);
+    shapeLines.push(`  static var ${symbol}: Color { FestiCoreSemanticColor.${symbol}.color }`);
   }
-  uiLines.push(
+  lines.push(
     '}', '',
     'private extension UIColor {',
-    '  static func festiCore(hex: UInt32, alpha: UInt8 = 0xFF) -> UIColor {',
-    '    UIColor(',
+    '  convenience init(hex: UInt32, alpha: UInt8) {',
+    '    self.init(',
     '      red: CGFloat((hex >> 16) & 0xFF) / 255,',
     '      green: CGFloat((hex >> 8) & 0xFF) / 255,',
     '      blue: CGFloat(hex & 0xFF) / 255,',
@@ -234,10 +243,8 @@ function generateColors(light, dark, names, outputs) {
     '  }',
     '}', ''
   );
-  colorLines.push('}', '');
+  collectOutput(outputs, 'Sources/FestiCoreSemanticColor.swift', lines.join('\n'));
   shapeLines.push('}', '');
-  collectOutput(outputs, 'Sources/UIColors.swift', uiLines.join('\n'));
-  collectOutput(outputs, 'Sources/Colors.swift', colorLines.join('\n'));
   collectOutput(outputs, 'Sources/ShapeStyle+.swift', shapeLines.join('\n'));
 }
 function generateLayout(light, spacing, radius, disabledOpacity, outputs) {
