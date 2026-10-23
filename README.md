@@ -37,7 +37,7 @@ FESTICORE 앱(iOS 우선, Android 확장)의 **Foundation 디자인 토큰**입�
 
 Node 버전은 `.nvmrc`에 고정한다. `npm ci` 후 `npm run build`로 `generated/ios/Sources/`의 Swift API를 갱신한다. 각 테마의 DTCG 입력을 Style Dictionary v4가 해석하고, 검증기와 Swift 작성기가 그 결과를 직렬화한다. 색상은 light/dark에 따라 바뀌는 `UIColor`와 이를 감싼 `Color`·`ShapeStyle` 확장 코드로 생성하며 색상 에셋은 만들지 않는다. `npm test`는 별칭·테마·단위·공개 API 이름을 검사하고 `npm run check`는 커밋된 생성물과 원본의 일치를 확인한다. 디자인 토큰 변경 PR에는 생성물도 함께 커밋한다.
 
-생성 대상은 semantic color, spacing, radius, typography다. 원자 색은 별칭 해석에만 쓰며 gradient, breakpoint, opacity/state, safe-area는 출력하지 않는다. `generated/ios/Sources`의 다섯 Swift 파일은 FestiCore-iOS의 `FestiCoreDesignKit/Sources/Token`에 역할별로 동기화한다. DesignSystem 저장소는 폰트 파일을 배포하지 않고, iOS 디자인 모듈이 Pretendard를 리소스로 등록한다. 손으로 작성한 SwiftUI 확장 파일은 생성 대상이 아니다.
+생성기는 Node 22에서 직접 실행하는 TypeScript이며 `npm run typecheck`로 형식을 검사한다. 생성 대상은 semantic color, spacing, radius, 비활성 상태 opacity, typography다. 원자 색은 별칭 해석에만 쓰며 gradient, breakpoint, 그 밖의 opacity/state, safe-area는 출력하지 않는다. `generated/ios/Sources`의 다섯 Swift 파일은 FestiCore-iOS의 `FestiCoreDesignKit/Sources/Token`에 역할별로 동기화한다. DesignSystem 저장소는 폰트 파일을 배포하지 않고, iOS 디자인 모듈이 Pretendard와 Bagel Fat One을 리소스로 등록한다. 실제 서체와 줄 간격은 iOS 모듈에서 번들 폰트를 기준으로 계산한다. 손으로 작성한 SwiftUI 확장 파일은 생성 대상이 아니다.
 
 ```swift
 Text("축제")
@@ -53,6 +53,7 @@ Figma에서 값을 고친 뒤 이 저장소의 JSON을 갱신하고 생성물을
 
 | 날짜 | 버전 | 내용 |
 | --- | --- | --- |
+| 2026-10-23 | TypeScript 생성기 | iOS 생성기와 검증 스크립트를 TypeScript로 전환. 비활성 opacity를 토큰에서 생성하고 실제 번들 서체 기반 줄 간격 계산 규칙을 반영 |
 | 2026-10-22 | UIColor 코드 정리 | DDD 방식의 `static let`과 hex 값으로 UIKit 색상 코드를 단순화. Light/Dark 동적 색상과 alpha 유지 |
 | 2026-10-22 | iOS 코드 컬러 | FestiCore semantic light/dark 색을 `UIColor`·`Color`·`ShapeStyle` 확장 코드로 생성. `FestiCoreColor` enum과 색상 `.xcassets` 제거, `FestiCoreDesignKit`의 `Sources/Token`으로 동기화. 생성 실패 시 기존 산출물 보존 |
 | 2026-10-22 | iOS 토큰 자동화 | DTCG 테마·별칭·타입 검증, semantic color·spacing·radius·typography Swift 생성과 CI 생성물 일치 검사 |

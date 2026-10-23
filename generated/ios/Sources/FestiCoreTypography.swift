@@ -14,9 +14,7 @@ public struct FestiCoreTextStyle {
   public let letterSpacing: CGFloat
   public let fontFamily: String
 
-  public var font: UIFont { UIFont.systemFont(ofSize: size, weight: weight) }
-  public var lineSpacing: CGFloat { max(0, size * lineHeight - font.lineHeight) }
-
+  // 실제 서체와 줄 간격은 앱에 번들된 폰트로 계산한다.
   public init(size: CGFloat, weight: UIFont.Weight, lineHeight: CGFloat, letterSpacing: CGFloat, fontFamily: String) {
     self.size = size
     self.weight = weight
@@ -29,7 +27,7 @@ public struct FestiCoreTextStyle {
 @MainActor public enum FestiCoreTypography {
   public static let baseFontFamily = "Pretendard"
   public static let pointFontFamily = "Bagel Fat One"
-  // 폰트 파일을 포함하기 전까지 시스템 폰트를 사용한다.
+  // letterSpacing은 em × fontSize로 계산한 pt 값이다.
   public static let baseBodyBold = FestiCoreTextStyle(size: 17, weight: .bold, lineHeight: 1.529, letterSpacing: 0, fontFamily: baseFontFamily)
   public static let baseBodyMedium = FestiCoreTextStyle(size: 17, weight: .medium, lineHeight: 1.529, letterSpacing: 0, fontFamily: baseFontFamily)
   public static let baseBodyRegular = FestiCoreTextStyle(size: 17, weight: .regular, lineHeight: 1.529, letterSpacing: 0, fontFamily: baseFontFamily)
