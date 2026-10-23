@@ -1,5 +1,10 @@
 # 변경 이력
 
+## 2026-10-23 — Semantic 색 소비 API
+
+- Joongna iOS의 `.color`·`.uiColor` 사용 형태를 참고해 `FestiCoreSemanticColor`로 통합합니다. 값은 Figma DTCG의 Light/Dark hex 코드에서 생성하며 원자 팔레트·색상 에셋은 노출하지 않습니다.
+- `ShapeStyle` 확장은 같은 semantic `.color`를 반환해 시스템 다크 모드를 따릅니다. 중복된 `Colors.swift`와 `UIColors.swift`는 생성하지 않습니다.
+
 ## 2026-10-23 — TypeScript iOS 생성기와 Foundation 상태
 
 - iOS 토큰 생성기와 생성물 검증 스크립트를 TypeScript로 전환하고 Node 22 타입 검사를 유지합니다.
