@@ -281,7 +281,7 @@ function generateTypography(light, names, outputs) {
     if (height <= 0) fail(`Invalid line height: ${name}`);
     if (typeof style.letterSpacing !== 'string' || !/^-?\d+(?:\.\d+)?em$/.test(style.letterSpacing)) fail(`Invalid letter spacing: ${name}`);
     const kern = number(Number(style.letterSpacing.slice(0, -2)) * size, `${name}.letterSpacing`);
-    const enumWeight = {400:'regular',500:'medium',700:'bold'}[weight];
+    const enumWeight = {400:'Regular',500:'Medium',700:'Bold'}[weight];
     const caseName = swiftName(name, 'text-style');
     styles.push({ caseName, size: format(size), weight: enumWeight, lineHeight: format(height), letterSpacing: format(kern) });
     lines.push(`  case ${caseName}`);

@@ -1,5 +1,9 @@
 # 변경 이력
 
+## 2026-10-27 — Pretendard 서체 case 명명 통일
+
+- 생성된 `FestiCoreTextStyle.fontFamily`가 Attendance와 같은 대문자 `PretendardFontFamily` case(`.Regular`, `.Medium`, `.Bold`)를 반환합니다.
+
 ## 2026-10-27 — Pretendard 타이포그래피 통일
 
 - point 스타일의 서체도 Pretendard로 통일하고 크기·굵기·자간·행간 토큰은 유지합니다.
