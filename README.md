@@ -39,7 +39,7 @@ Node 버전은 `.nvmrc`에 고정한다. `npm ci` 후 `npm run build`로 `genera
 
 생성기는 Node 22에서 직접 실행하는 TypeScript이며 `npm run typecheck`로 형식을 검사한다. 생성 대상은 semantic color, spacing, radius, 비활성 상태 opacity, typography다. 원자 색은 별칭 해석에만 쓰며 gradient, breakpoint, 그 밖의 opacity/state, safe-area는 출력하지 않는다. `generated/ios/Sources`의 네 Swift 파일은 FestiCore-iOS의 `FestiCoreDesignKit/Sources/Token`에 역할별로 동기화한다. DesignSystem 저장소는 폰트 파일을 배포하지 않고, iOS 디자인 모듈이 Pretendard를 리소스로 등록한다. 생성된 `FestiCoreTextStyle`은 37개 토큰을 enum case로 제공하며 등록된 서체의 실제 메트릭을 기준으로 iOS 모듈이 행간을 계산한다. 손으로 작성한 SwiftUI 확장 파일은 생성 대상이 아니다.
 
-`FestiCoreTextStyle.fontFamily`가 반환하는 `PretendardFontFamily`에는 `.regular`, `.medium`, `.bold` case가 필요하다. iOS 모듈은 생성 Swift와 이 서체 타입을 함께 컴파일해 계약을 확인한다.
+`FestiCoreTextStyle.fontFamily`가 반환하는 `PretendardFontFamily`는 Attendance와 같은 대문자 case를 사용한다. 현재 토큰에서 참조하는 case는 `.Regular`, `.Medium`, `.Bold`이며, iOS 모듈은 생성 Swift와 서체 타입을 함께 컴파일해 계약을 확인한다.
 
 ```swift
 Text("축제")
