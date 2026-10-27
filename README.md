@@ -55,6 +55,7 @@ Figma에서 값을 고친 뒤 이 저장소의 JSON을 갱신하고 생성물을
 
 | 날짜 | 버전 | 내용 |
 | --- | --- | --- |
+| 2026-10-27 | Pretendard case 명명 | `FestiCoreTextStyle.fontFamily`의 `.Regular`·`.Medium`·`.Bold`를 Attendance 표기와 통일 |
 | 2026-10-27 | Pretendard 타이포그래피 | point 서체를 Pretendard로 통일하고, iOS 텍스트 스타일을 enum case API로 변경 |
 | 2026-10-23 | Semantic 색 API | Joongna의 `.color`·`.uiColor` 사용 형태를 참고해 코드형 hex Light/Dark 색을 단일 타입으로 생성. ShapeStyle은 같은 동적 색 사용 |
 | 2026-10-23 | TypeScript 생성기 | iOS 생성기와 검증 스크립트를 TypeScript로 전환. 비활성 opacity를 토큰에서 생성하고 실제 번들 서체 기반 줄 간격 계산 규칙을 반영 |
