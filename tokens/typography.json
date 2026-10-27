@@ -11,8 +11,8 @@
     "point": {
       "$type": "fontFamily",
       "$value": [
-        "Bagel Fat One",
         "Pretendard",
+        "Apple SD Gothic Neo",
         "sans-serif"
       ]
     }

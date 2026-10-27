@@ -262,33 +262,45 @@ function generateLayout(light, spacing, radius, disabledOpacity, outputs) {
   collectOutput(outputs, 'Sources/FestiCoreLayout.swift', lines.join('\n'));
 }
 function generateTypography(light, names, outputs) {
-  const lines = [...swiftHeader('FestiCoreTypography.swift'), 'import UIKit', '', 'public struct FestiCoreTextStyle {',
-    '  public let size: CGFloat', '  public let weight: UIFont.Weight', '  public let lineHeight: CGFloat', '  public let letterSpacing: CGFloat', '  public let fontFamily: String', '',
-    '  // 실제 서체와 줄 간격은 앱에 번들된 폰트로 계산한다.',
-    '  public init(size: CGFloat, weight: UIFont.Weight, lineHeight: CGFloat, letterSpacing: CGFloat, fontFamily: String) {',
-    '    self.size = size', '    self.weight = weight', '    self.lineHeight = lineHeight', '    self.letterSpacing = letterSpacing', '    self.fontFamily = fontFamily', '  }', '}', '', '@MainActor public enum FestiCoreTypography {'];
-  const families = ['base', 'point'];
-  for (const group of families) {
+  const lines = [...swiftHeader('FestiCoreTypography.swift'), 'import UIKit', '', 'public enum FestiCoreTextStyle: Sendable {'];
+  for (const group of ['base', 'point']) {
     const value = light.resolved.get(`font-family.${group}`);
-    if (!Array.isArray(value) || typeof value[0] !== 'string' || !value[0]) fail(`Invalid font family: ${group}`);
-    lines.push(`  public static let ${group}FontFamily = ${JSON.stringify(value[0])}`);
+    if (!Array.isArray(value) || value[0] !== 'Pretendard') fail(`Invalid font family: ${group}`);
   }
-  lines.push('  // letterSpacing은 em × fontSize로 계산한 pt 값이다.');
+  const styles = [];
   for (const name of names) {
     if (light.all.get(name).$type !== 'typography') fail(`Invalid typography type: ${name}`);
     const style = light.resolved.get(name);
     const size = dimension(style.fontSize, `${name}.fontSize`);
     const weight = number(style.fontWeight, `${name}.fontWeight`);
     if (![400,500,700].includes(weight)) fail(`Unsupported font weight: ${name}`);
-    const family = style.fontFamily;
-    const familyGroup = families.find(group => JSON.stringify(light.resolved.get(`font-family.${group}`)) === JSON.stringify(family));
-    if (!familyGroup) fail(`Unsupported family: ${name}`);
+    const familyGroup = name.split('.')[1];
+    const rawFamily = (light.all.get(name).$value as Record<string, unknown>).fontFamily;
+    if (!['base', 'point'].includes(familyGroup) || rawFamily !== `{font-family.${familyGroup}}`) fail(`Unsupported family alias: ${name}`);
     const height = number(style.lineHeight, `${name}.lineHeight`);
     if (height <= 0) fail(`Invalid line height: ${name}`);
     if (typeof style.letterSpacing !== 'string' || !/^-?\d+(?:\.\d+)?em$/.test(style.letterSpacing)) fail(`Invalid letter spacing: ${name}`);
     const kern = number(Number(style.letterSpacing.slice(0, -2)) * size, `${name}.letterSpacing`);
     const enumWeight = {400:'regular',500:'medium',700:'bold'}[weight];
-    lines.push(`  public static let ${swiftName(name, 'text-style')} = FestiCoreTextStyle(size: ${format(size)}, weight: .${enumWeight}, lineHeight: ${format(height)}, letterSpacing: ${format(kern)}, fontFamily: ${familyGroup}FontFamily)`);
+    const caseName = swiftName(name, 'text-style');
+    styles.push({ caseName, size: format(size), weight: enumWeight, lineHeight: format(height), letterSpacing: format(kern) });
+    lines.push(`  case ${caseName}`);
+  }
+  const properties = [
+    ['size', 'CGFloat', 'size'],
+    ['fontFamily', 'PretendardFontFamily', 'weight'],
+    ['lineHeight', 'CGFloat', 'lineHeight'],
+    ['letterSpacing', 'CGFloat', 'letterSpacing'],
+  ];
+  for (const [name, type, field] of properties) {
+    if (name === 'letterSpacing') lines.push('', '  // 원본 em 값에 fontSize를 곱한 pt 값이다.');
+    else lines.push('');
+    lines.push(`  public var ${name}: ${type} {`, '    switch self {');
+    for (const style of styles) {
+      const value = style[field];
+      lines.push(`    case .${style.caseName}: return ${name === 'fontFamily' ? `.${value}` : value}`);
+    }
+    lines.push('    }', '  }');
   }
   lines.push('}', '');
   collectOutput(outputs, 'Sources/FestiCoreTypography.swift', lines.join('\n'));

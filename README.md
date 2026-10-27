@@ -15,7 +15,7 @@ FESTICORE 앱(iOS 우선, Android 확장)의 **Foundation 디자인 토큰**입�
 | `tokens/color/semantic.light.json` | 화면에서 쓰는 색: primary, secondary, label, background, line, fill, status, accent, static, static-alpha, inverse, material, interaction → atomic 참조 | Light (기본) |
 | `tokens/color/semantic.dark.json` | 위와 같은 키, 다크 모드 값 | Dark |
 | `tokens/foundation.json` | spacing(margin `m-*`: 2·4·6~24, padding `p-*`: 4~24), radius(`r-*`: 4~24), opacity(`o-5`~`o-90`), state(pressed·active·disabled·dimmed), breakpoint | 공통 |
-| `tokens/typography.json` | font-family(base=Pretendard, point=Bagel Fat One), font-weight(400·500·700), font-size, text-style(base 11단계 × bold/medium/regular, point 4단계) | 공통 |
+| `tokens/typography.json` | font-family(base·point=Pretendard), font-weight(400·500·700), font-size, text-style(base 11단계 × bold/medium/regular, point 4단계) | 공통 |
 | `tokens/gradient.json` | bottom-cta, scroll-fade-top, scroll-fade-bottom (light/dark) | light/dark |
 | `tokens/safe-area.json` | 기기별 상·하단 Safe Area 참고값 | 공통 |
 
@@ -31,13 +31,15 @@ FESTICORE 앱(iOS 우선, Android 확장)의 **Foundation 디자인 토큰**입�
 - **굵기**는 400/500/700만 씁니다(SemiBold 미사용).
 - **state**: pressed·active는 *오버레이*(color.interaction.*), disabled는 *요소 opacity*, dimmed는 *배경 scrim*(color.material.dimmer)입니다.
 - **safe-area**는 디자인 참고값입니다. 실제 앱은 `safeAreaInsets`(iOS) / `WindowInsets`(Android) 런타임 값을 씁니다. iPhone Air(68)와 iPhone Duo 값은 확인이 필요합니다.
-- 폰트: Pretendard(OFL), Bagel Fat One(OFL). 앱에 번들해야 합니다.
+- 폰트: Pretendard(OFL). 앱에 번들해야 합니다. point 스타일은 별도 크기·자간·행간을 유지합니다.
 
 ## iOS 토큰 생성
 
 Node 버전은 `.nvmrc`에 고정한다. `npm ci` 후 `npm run build`로 `generated/ios/Sources/`의 Swift API를 갱신한다. 각 테마의 DTCG 입력을 Style Dictionary v4가 해석하고, 검증기와 Swift 작성기가 그 결과를 직렬화한다. 색상은 light/dark hex를 가진 `FestiCoreSemanticColor` 하나에서 `.color`·`.uiColor`로 사용한다. `ShapeStyle` 확장도 같은 `.color`를 가리켜 시스템 다크 모드에 반응하며 색상 에셋은 만들지 않는다. `npm test`는 별칭·테마·단위·공개 API 이름을 검사하고 `npm run check`는 커밋된 생성물과 원본의 일치를 확인한다. 디자인 토큰 변경 PR에는 생성물도 함께 커밋한다.
 
-생성기는 Node 22에서 직접 실행하는 TypeScript이며 `npm run typecheck`로 형식을 검사한다. 생성 대상은 semantic color, spacing, radius, 비활성 상태 opacity, typography다. 원자 색은 별칭 해석에만 쓰며 gradient, breakpoint, 그 밖의 opacity/state, safe-area는 출력하지 않는다. `generated/ios/Sources`의 네 Swift 파일은 FestiCore-iOS의 `FestiCoreDesignKit/Sources/Token`에 역할별로 동기화한다. DesignSystem 저장소는 폰트 파일을 배포하지 않고, iOS 디자인 모듈이 Pretendard와 Bagel Fat One을 리소스로 등록한다. 실제 서체와 줄 간격은 iOS 모듈에서 번들 폰트를 기준으로 계산한다. 손으로 작성한 SwiftUI 확장 파일은 생성 대상이 아니다.
+생성기는 Node 22에서 직접 실행하는 TypeScript이며 `npm run typecheck`로 형식을 검사한다. 생성 대상은 semantic color, spacing, radius, 비활성 상태 opacity, typography다. 원자 색은 별칭 해석에만 쓰며 gradient, breakpoint, 그 밖의 opacity/state, safe-area는 출력하지 않는다. `generated/ios/Sources`의 네 Swift 파일은 FestiCore-iOS의 `FestiCoreDesignKit/Sources/Token`에 역할별로 동기화한다. DesignSystem 저장소는 폰트 파일을 배포하지 않고, iOS 디자인 모듈이 Pretendard를 리소스로 등록한다. 생성된 `FestiCoreTextStyle`은 37개 토큰을 enum case로 제공하며 등록된 서체의 실제 메트릭을 기준으로 iOS 모듈이 행간을 계산한다. 손으로 작성한 SwiftUI 확장 파일은 생성 대상이 아니다.
+
+`FestiCoreTextStyle.fontFamily`가 반환하는 `PretendardFontFamily`에는 `.regular`, `.medium`, `.bold` case가 필요하다. iOS 모듈은 생성 Swift와 이 서체 타입을 함께 컴파일해 계약을 확인한다.
 
 ```swift
 Text("축제")
@@ -53,6 +55,7 @@ Figma에서 값을 고친 뒤 이 저장소의 JSON을 갱신하고 생성물을
 
 | 날짜 | 버전 | 내용 |
 | --- | --- | --- |
+| 2026-10-27 | Pretendard 타이포그래피 | point 서체를 Pretendard로 통일하고, iOS 텍스트 스타일을 enum case API로 변경 |
 | 2026-10-23 | Semantic 색 API | Joongna의 `.color`·`.uiColor` 사용 형태를 참고해 코드형 hex Light/Dark 색을 단일 타입으로 생성. ShapeStyle은 같은 동적 색 사용 |
 | 2026-10-23 | TypeScript 생성기 | iOS 생성기와 검증 스크립트를 TypeScript로 전환. 비활성 opacity를 토큰에서 생성하고 실제 번들 서체 기반 줄 간격 계산 규칙을 반영 |
 | 2026-10-22 | UIColor 코드 정리 | DDD 방식의 `static let`과 hex 값으로 UIKit 색상 코드를 단순화. Light/Dark 동적 색상과 alpha 유지 |

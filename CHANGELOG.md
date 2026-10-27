@@ -1,5 +1,12 @@
 # 변경 이력
 
+## 2026-10-27 — Pretendard 타이포그래피 통일
+
+- point 스타일의 서체도 Pretendard로 통일하고 크기·굵기·자간·행간 토큰은 유지합니다.
+- iOS 생성 API를 `FestiCoreTextStyle`의 37개 enum case와 크기·서체 굵기·행간·자간 속성으로 바꿉니다.
+- 기존 `FestiCoreTypography.*`, `FestiCoreTextStyle.init`, `weight`와 문자열 `fontFamily` API를 제거합니다. 호출부는 `FestiCoreTypography.baseBodyBold`에서 `FestiCoreTextStyle.baseBodyBold`로 옮겨야 합니다.
+- 서체 값이 같은 base·point를 원본 별칭으로 구별하고 잘못된 별칭을 생성 전에 거부합니다.
+
 ## 2026-10-23 — Semantic 색 소비 API
 
 - Joongna iOS의 `.color`·`.uiColor` 사용 형태를 참고해 `FestiCoreSemanticColor`로 통합합니다. 값은 Figma DTCG의 Light/Dark hex 코드에서 생성하며 원자 팔레트·색상 에셋은 노출하지 않습니다.

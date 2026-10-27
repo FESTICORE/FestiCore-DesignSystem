@@ -73,10 +73,14 @@ test('light/dark semantic colors are deterministic without assets', () => {
     assert.match(semantic, /darkHex: 0x3D7BFF, darkAlpha: 0x1A/);
     assert.match(shape, /static var primaryNormal: Color \{ FestiCoreSemanticColor\.primaryNormal\.color \}/);
     assert.doesNotMatch(semantic, /atomic|public extension Color|public extension ShapeStyle/);
-    assert.match(typography, /letterSpacing: -0\.884/);
-    assert.match(typography, /baseBodyRegular = FestiCoreTextStyle\(size: 17, weight: \.regular, lineHeight: 1\.529,/);
-    assert.match(typography, /fontFamily: baseFontFamily/);
-    assert.match(typography, /pointFontFamily = "Bagel Fat One"/);
+    assert.match(typography, /public enum FestiCoreTextStyle: Sendable/);
+    assert.match(typography, /case baseBodyRegular/);
+    assert.match(typography, /case pointDisplay/);
+    assert.match(typography, /public var fontFamily: PretendardFontFamily/);
+    assert.match(typography, /case \.baseLargeTitleBold: return -0\.884/);
+    assert.match(typography, /case \.pointDisplay: return 40/);
+    assert.match(typography, /case \.pointDisplay: return -0\.4/);
+    assert.doesNotMatch(typography, /Bagel|pointFontFamily|public enum FestiCoreTypography/);
     assert.doesNotMatch(typography, /UIFont\.systemFont|public var lineSpacing/);
     assert.match(layout, /disabledOpacity: CGFloat = 0\.3/);
     const names = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
@@ -91,7 +95,7 @@ test('light/dark semantic colors are deterministic without assets', () => {
       'paddingP4','paddingP8','paddingP12','paddingP16','paddingP20','paddingP24',
       'r4','r8','r12','r16','r20','r24','disabledOpacity'
     ].sort());
-    assert.equal([...typography.matchAll(/public static let \w+ = FestiCoreTextStyle/g)].length, 37);
+    assert.equal([...typography.matchAll(/^  case \w+$/gm)].length, 37);
     assert.doesNotMatch(layout + typography, /public static let (?:opacity|breakpoint|safeArea|gradient)/i);
     const before = semantic + shape + layout + typography;
     result = run(f);
@@ -193,7 +197,37 @@ test('invalid color, dimension and typography values fail', () => {
   expectFailure(f => edit(f, 'foundation.json', json => { json.spacing.margin['m-2'].$value = '2pt'; }), /Invalid px dimension/);
   expectFailure(f => edit(f, 'typography.json', json => { json['font-weight'].bold.$value = 600; }), /Unsupported font weight/);
   expectFailure(f => edit(f, 'typography.json', json => { json['text-style'].base.body.regular.$value.lineHeight = '150%'; }), /Invalid number: .*lineHeight/);
-  expectFailure(f => edit(f, 'typography.json', json => { json['text-style'].base.body.regular.$value.fontFamily = ['Unknown Font']; }), /Unsupported family/);
+  expectFailure(f => edit(f, 'typography.json', json => { json['text-style'].base.body.regular.$value.fontFamily = ['Unknown Font']; }), /Unsupported family alias/);
+});
+
+test('equal base and point families keep distinct token cases', () => {
+  const f = fixture();
+  try {
+    const tokens = JSON.parse(fs.readFileSync(path.join(f.tokens, 'typography.json'), 'utf8'));
+    assert.deepEqual(tokens['font-family'].point.$value, tokens['font-family'].base.$value);
+    const result = run(f);
+    assert.equal(result.status, 0, result.stderr);
+    const output = fs.readFileSync(path.join(f.output, 'Sources/FestiCoreTypography.swift'), 'utf8');
+    assert.match(output, /case pointDisplay/);
+    assert.match(output, /case pointTitle/);
+    assert.match(output, /case pointHeading/);
+    assert.match(output, /case pointLabel/);
+    assert.match(output, /public var fontFamily: PretendardFontFamily/);
+  } finally { cleanup(f); }
+});
+
+test('typography family must use its own group alias', () => {
+  expectFailure(f => edit(f, 'typography.json', json => { json['text-style'].base.body.regular.$value.fontFamily = '{font-family.point}'; }), /Unsupported family alias/);
+  expectFailure(f => edit(f, 'typography.json', json => { json['text-style'].point.display.$value.fontFamily = '{font-family.base}'; }), /Unsupported family alias/);
+  expectFailure(f => edit(f, 'typography.json', json => { json['text-style'].point.display.$value.fontFamily = 'Pretendard'; }), /Unsupported family alias/);
+});
+
+test('typography families must resolve to Pretendard first', () => {
+  for (const group of ['base', 'point']) {
+    expectFailure(f => edit(f, 'typography.json', json => {
+      json['font-family'][group].$value = ['Bagel Fat One', 'Pretendard', 'sans-serif'];
+    }), /Invalid font family/);
+  }
 });
 
 test('token set path traversal fails before reading a file', () => {
