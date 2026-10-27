@@ -77,6 +77,10 @@ test('light/dark semantic colors are deterministic without assets', () => {
     assert.match(typography, /case baseBodyRegular/);
     assert.match(typography, /case pointDisplay/);
     assert.match(typography, /public var fontFamily: PretendardFontFamily/);
+    assert.match(typography, /case \.baseBodyRegular: return \.Regular/);
+    assert.match(typography, /case \.baseBodyMedium: return \.Medium/);
+    assert.match(typography, /case \.baseBodyBold: return \.Bold/);
+    assert.doesNotMatch(typography, /return \.(?:regular|medium|bold)\b/);
     assert.match(typography, /case \.baseLargeTitleBold: return -0\.884/);
     assert.match(typography, /case \.pointDisplay: return 40/);
     assert.match(typography, /case \.pointDisplay: return -0\.4/);
@@ -213,6 +217,7 @@ test('equal base and point families keep distinct token cases', () => {
     assert.match(output, /case pointHeading/);
     assert.match(output, /case pointLabel/);
     assert.match(output, /public var fontFamily: PretendardFontFamily/);
+    assert.match(output, /case \.pointDisplay: return \.Regular/);
   } finally { cleanup(f); }
 });
 
