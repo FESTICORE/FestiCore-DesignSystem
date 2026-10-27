@@ -222,6 +222,14 @@ test('typography family must use its own group alias', () => {
   expectFailure(f => edit(f, 'typography.json', json => { json['text-style'].point.display.$value.fontFamily = 'Pretendard'; }), /Unsupported family alias/);
 });
 
+test('typography families must resolve to Pretendard first', () => {
+  for (const group of ['base', 'point']) {
+    expectFailure(f => edit(f, 'typography.json', json => {
+      json['font-family'][group].$value = ['Bagel Fat One', 'Pretendard', 'sans-serif'];
+    }), /Invalid font family/);
+  }
+});
+
 test('token set path traversal fails before reading a file', () => {
   expectFailure(f => edit(f, '$themes.json', json => { json[0].selectedTokenSets['../../outside'] = 'enabled'; }), /Unsafe token set/);
 });
