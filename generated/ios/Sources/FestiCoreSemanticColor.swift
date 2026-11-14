@@ -90,6 +90,7 @@ public extension FestiCoreSemanticColor {
   static let staticalphaWhite60 = FestiCoreSemanticColor(lightHex: 0xFFFFFF, lightAlpha: 0x99, darkHex: 0xFFFFFF, darkAlpha: 0x99)
   static let staticalphaWhite80 = FestiCoreSemanticColor(lightHex: 0xFFFFFF, lightAlpha: 0xCC, darkHex: 0xFFFFFF, darkAlpha: 0xCC)
   static let staticBlack = FestiCoreSemanticColor(lightHex: 0x000000, lightAlpha: 0xFF, darkHex: 0x000000, darkAlpha: 0xFF)
+  static let staticGray = FestiCoreSemanticColor(lightHex: 0x8A8A93, lightAlpha: 0xFF, darkHex: 0x8A8A93, darkAlpha: 0xFF)
   static let staticInk = FestiCoreSemanticColor(lightHex: 0x111113, lightAlpha: 0xFF, darkHex: 0x111113, darkAlpha: 0xFF)
   static let staticLime = FestiCoreSemanticColor(lightHex: 0xC6FF34, lightAlpha: 0xFF, darkHex: 0xC6FF34, darkAlpha: 0xFF)
   static let staticPurpleTint = FestiCoreSemanticColor(lightHex: 0xF6F2FF, lightAlpha: 0xFF, darkHex: 0xF6F2FF, darkAlpha: 0xFF)
