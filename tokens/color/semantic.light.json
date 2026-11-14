@@ -129,6 +129,11 @@
         "$type": "color",
         "$value": "{color.atomic.purple.100}",
         "$description": "모드와 무관한 보라 틴트 (Login Tag 등)"
+      },
+      "gray": {
+        "$type": "color",
+        "$value": "{color.atomic.ink.500}",
+        "$description": "모드와 무관한 회색 (Festival Card 마감 태그 등)"
       }
     },
     "static-alpha": {

@@ -66,6 +66,7 @@ public extension ShapeStyle where Self == Color {
   static var staticalphaWhite60: Color { FestiCoreSemanticColor.staticalphaWhite60.color }
   static var staticalphaWhite80: Color { FestiCoreSemanticColor.staticalphaWhite80.color }
   static var staticBlack: Color { FestiCoreSemanticColor.staticBlack.color }
+  static var staticGray: Color { FestiCoreSemanticColor.staticGray.color }
   static var staticInk: Color { FestiCoreSemanticColor.staticInk.color }
   static var staticLime: Color { FestiCoreSemanticColor.staticLime.color }
   static var staticPurpleTint: Color { FestiCoreSemanticColor.staticPurpleTint.color }
