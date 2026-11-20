@@ -62,3 +62,14 @@ python3 -m unittest discover -s .claude/hooks/tests < /dev/null
 - `gh pr merge --squash`의 제목 · 본문은 검사하지 않는다. 직접 지정하고 머지 후 커밋 메시지를 확인한다.
 - Codex에는 Claude 훅이 걸리지 않는다. 커밋 전에 위 직접 검사와 verify를 실행한다.
 - 규칙을 바꾸면 같은 PR에서 문서와 훅을 함께 고친다.
+
+## AI 리뷰
+
+iOS · Android 저장소와 같은 두 워크플로가 `main` 대상 PR마다 돈다. 키(`OPENAI_API_KEY` · `GEMINI_API_KEY`)는 iOS와 같은 값을 쓴다.
+
+| 워크플로 | 하는 일 |
+| --- | --- |
+| `.github/workflows/codex-pr-review.yml` | Codex가 PR 변경을 읽고 댓글 하나를 갱신한다 |
+| `.github/workflows/gemini-code-review.yml` | `*.ts` · `*.mjs` · `*.json` · 생성 Swift/Kotlin · 워크플로 diff에 P1 · P2 줄 댓글 |
+
+리뷰가 실패(할당량 · 크레딧)하면 그 HEAD의 AI 리뷰는 미완료로 PR에 적는다. 워크플로 성공 표시만으로 리뷰 완료를 주장하지 않는다.

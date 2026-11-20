@@ -1,0 +1,481 @@
+name: Gemini Code Review
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+      - master
+    types: [opened, ready_for_review, synchronize]
+
+concurrency:
+  group: gemini-code-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  code-review:
+    if: github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get PR Context and Filtered Git Diff
+        id: get_diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git fetch origin "$BASE_SHA" "$HEAD_SHA"
+          git -c core.quotePath=false diff "$BASE_SHA...$HEAD_SHA" -- '*.ts' '*.mjs' '*.json' '*.swift' '*.kt' '.github/workflows/*.yml' '.github/workflows/*.yaml' ':(exclude)package-lock.json' > diff.txt
+          if [ ! -s diff.txt ]; then
+            echo "skip_review=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_review=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check Existing Gemini Review
+        if: steps.get_diff.outputs.skip_review == 'false'
+        id: existing_review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const headSHA = context.payload.pull_request.head.sha;
+            const request = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100,
+            };
+            const reviews = await github.paginate(github.rest.pulls.listReviews, request);
+            const marked = reviews
+              .filter((item) => item.user?.login === "github-actions[bot]")
+              .map((item) => ({
+                item,
+                match: item.body?.match(/<!-- gemini-code-review head=([0-9a-f]+) inline=(\d+) -->\s*$/),
+              }))
+              .find(({ match }) => match?.[1] === headSHA);
+            if (marked) {
+              const expected = Number(marked.match[2]);
+              for (let attempt = 0; attempt < 8; attempt++) {
+                if (attempt) await new Promise((resolve) => setTimeout(resolve, 2000));
+                try {
+                  const comments = await github.paginate(
+                    "GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/comments",
+                    { ...request, review_id: marked.item.id }
+                  );
+                  if (comments.length === expected) {
+                    core.setOutput("already_reviewed", "true");
+                    return;
+                  }
+                  console.log(`Review ${marked.item.id} has ${comments.length}/${expected} inline comments for ${headSHA}`);
+                } catch (error) {
+                  if (error.status !== 404) throw error;
+                  console.log(`Review ${marked.item.id} comments are not visible yet (404)`);
+                }
+              }
+              // A deleted bot comment can leave this mismatch until the PR head changes.
+              throw new Error(`Incomplete persisted review for ${headSHA}`);
+            }
+            // Older summary-only issue comments have no SHA receipt and cannot be
+            // attributed safely; legacy PR reviews expose commit_id.
+            const legacy = reviews.find((item) => item.commit_id === headSHA
+              && item.user?.login === "github-actions[bot]"
+              && !item.body?.includes("<!-- gemini-code-review head="));
+            if (legacy) {
+              console.log(`Found legacy review ${legacy.id} for ${headSHA}`);
+              core.setOutput("already_reviewed", "true");
+            }
+
+      - name: Install GoogleGenerativeAI
+        if: steps.get_diff.outputs.skip_review == 'false' && steps.existing_review.outputs.already_reviewed != 'true'
+        run: npm install @google/generative-ai
+
+      - name: Parse Diff for Valid Lines and Annotate
+        if: steps.get_diff.outputs.skip_review == 'false' && steps.existing_review.outputs.already_reviewed != 'true'
+        uses: actions/github-script@v7
+        id: parse_diff
+        with:
+          script: |
+            const fs = require("fs");
+            const diff = fs.readFileSync("diff.txt", "utf8");
+            const validLines = {};
+            const lineContentMap = {};
+            const annotatedLines = [];
+            let currentFile = null;
+            let lineNum = 0;
+            for (const line of diff.split("\n")) {
+              if (line.startsWith("diff --git")) {
+                currentFile = null;
+                annotatedLines.push(line);
+                continue;
+              }
+              if (line.startsWith("+++ ")) {
+                let path = line.slice(4).replace(/\t$/, "");
+                if (path.startsWith('"') && path.endsWith('"')) {
+                  try { path = JSON.parse(path); } catch { path = ""; }
+                }
+                currentFile = path.startsWith("b/") ? path.slice(2) : null;
+                annotatedLines.push(line);
+                continue;
+              }
+              if (line.startsWith("---") || line.startsWith("index ")) {
+                annotatedLines.push(line);
+                continue;
+              }
+              if (line.startsWith("@@") && currentFile) {
+                const match = line.match(/@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/);
+                if (match) lineNum = parseInt(match[1]);
+                annotatedLines.push(line);
+                continue;
+              }
+              if (!currentFile) {
+                annotatedLines.push(line);
+                continue;
+              }
+              if (line.startsWith("+") && !line.startsWith("+++")) {
+                if (!validLines[currentFile]) validLines[currentFile] = new Set();
+                validLines[currentFile].add(lineNum);
+                if (!lineContentMap[currentFile]) lineContentMap[currentFile] = {};
+                lineContentMap[currentFile][lineNum] = line.substring(1);
+                annotatedLines.push(`[LINE ${lineNum}] ${line}`);
+                lineNum++;
+              } else if (line.startsWith("-") && !line.startsWith("---")) {
+                annotatedLines.push(`[DEL] ${line}`);
+              } else if (line.startsWith(" ")) {
+                annotatedLines.push(`[CTX ${lineNum}] ${line}`);
+                lineNum++;
+              } else {
+                // Metadata such as "\\ No newline at end of file" is not a source line.
+                annotatedLines.push(line);
+              }
+            }
+            const serializable = {};
+            for (const [file, lines] of Object.entries(validLines)) {
+              serializable[file] = [...lines].sort((a, b) => a - b);
+            }
+            fs.writeFileSync("valid_lines.json", JSON.stringify(serializable));
+            fs.writeFileSync("line_content_map.json", JSON.stringify(lineContentMap));
+            fs.writeFileSync("annotated_diff.txt", annotatedLines.join("\n"));
+
+      - name: Run Gemini Review
+        if: steps.get_diff.outputs.skip_review == 'false' && steps.existing_review.outputs.already_reviewed != 'true'
+        id: gemini_review
+        uses: actions/github-script@v7
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        with:
+          script: |
+            const fs = require("fs");
+            const annotated_diff = fs.readFileSync("annotated_diff.txt", "utf8");
+            const pr_title = context.payload.pull_request.title;
+            const pr_body = context.payload.pull_request.body || "내용 없음";
+            const { GoogleGenerativeAI, SchemaType } = require("@google/generative-ai");
+            const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+            const model = genAI.getGenerativeModel({
+              model: "gemini-2.5-flash",
+              generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                  type: SchemaType.OBJECT,
+                  properties: {
+                    summary: { type: SchemaType.STRING },
+                    comments: {
+                      type: SchemaType.ARRAY,
+                      maxItems: 5,
+                      items: {
+                        type: SchemaType.OBJECT,
+                        properties: {
+                          path: { type: SchemaType.STRING },
+                          line: { type: SchemaType.INTEGER },
+                          code_snippet: { type: SchemaType.STRING },
+                          body: { type: SchemaType.STRING },
+                        },
+                        required: ["path", "line", "code_snippet", "body"],
+                      },
+                    },
+                  },
+                  required: ["summary", "comments"],
+                },
+              },
+            });
+            const promptLines = [
+              "You are a senior design-system engineer performing a code review on the FestiCore DesignSystem token repository (DTCG JSON tokens, TypeScript generators with Style Dictionary v4, generated Swift and Kotlin Compose outputs).",
+              "",
+              "[Tone and Style Guidelines]",
+              "- Do NOT include unnecessary praise, greetings, or overly verbose explanations.",
+              "- Do NOT provide unsolicited CS insights (컴퓨터 과학적 통찰) or related interview questions.",
+              "- Provide concise, objective, and well-organized feedback suitable for immediate practical use.",
+              "",
+              "CRITICAL LINE NUMBER RULES (MUST FOLLOW):",
+              "- Each diff line is annotated with [LINE N] for added lines or [CTX N] for context lines.",
+              "- You MUST only comment on [LINE N] lines (added/modified code). NEVER comment on [CTX] or [DEL] lines.",
+              "- Use the EXACT number N shown in the [LINE N] annotation. Do NOT compute line numbers yourself.",
+              "- The \"code_snippet\" field must contain the exact code from that [LINE N] line, including leading and trailing whitespace.",
+              "",
+              "[PR Context]",
+              "Title: " + pr_title,
+              "Description: " + pr_body,
+              "",
+              "[Project Architecture]",
+              "- Stack: Node 22 TypeScript (run directly), Style Dictionary v4, node:test",
+              "- Layout: tokens/ (DTCG source) → scripts/build-ios.ts · build-android.ts (shared loadValidatedTokens) → generated/ios · generated/android → synced into FestiCore-iOS and FestiCore-Android",
+              "- Consumers: FestiCore-iOS FestiCoreDesignKit and FestiCore-Android ui/designkit sync the generated files by commit SHA",
+              "- Use only the project conventions stated here; do not infer rules from a generic template.",
+              "",
+              "[Review Criteria]",
+              "1. Prioritize reproducible behavior bugs: incorrect API mapping, state transitions, navigation, cancellation, authentication, crashes, and data loss. Explain the specific failing path and why the changed line causes it.",
+              "For GitHub Actions YAML changes, check trigger conditions, job outputs, permissions, secret handling, and whether review or validation is silently skipped.",
+              "2. Mandatory repository rules: generated/ files must be produced by the generators and match `npm run build`; never hand-edit them. Only semantic colors are exported (no atomic). Public color names must match tests/fixtures/public-color-names.json. Units: 1px = 1pt/dp/sp, lineHeight is a multiplier, letterSpacing is em (iOS kern = em × size, Android em as-is). iOS and Android must use the same validated tokens. Report a changed-line violation only when the relevant rule and consequence are clear.",
+              "3. Follow README.md, CLAUDE.md and nearby code for generator structure and two-space TypeScript style. Do not demand new dependencies or a component library.",
+              "4. A suggestion block is optional. Include one only when its exact replacement is correct and complete; otherwise describe the minimal fix in prose.",
+              "",
+              "[Severity Prefix]",
+              "Each comment body MUST start with a severity tag on its own line, then a blank line, then the actual comment:",
+              "- 🔴 [P1] Critical: a concrete crash, security/privacy failure, data loss, or primary flow failure",
+              "- 🟠 [P2] Major: a concrete incorrect state, API, navigation, concurrency, or module-boundary behavior",
+              "Do not emit P3/P4/P5, optional style feedback, speculative risks, or comments that merely restate a rule without showing a concrete violation. A mandatory AGENTS.md rule violation with clear changed-line evidence can be P2.",
+              "",
+              "Format: \"🔴 **[P1] Critical**\\n\\nActual comment content here...\"",
+              "",
+              "Ignore optional formatting, naming, import ordering, and comments.",
+              "",
+              "Report at most five distinct, evidence-backed P1/P2 findings. Keep the summary under 600 characters and each comment body under 500 characters. If more substantive findings remain, summarize them concisely in summary. Prefer no comments over uncertain findings. Write in Korean Markdown without greetings or closings.",
+              "",
+              "Respond ONLY with a JSON object in this exact format:",
+              "{",
+              "  \"summary\": \"전체 리뷰 요약 (한국어, 마크다운)\",",
+              "  \"comments\": [",
+              "    {",
+              "      \"path\": \"file path relative to repo root (from the b/ prefix in diff)\",",
+              "      \"line\": <exact N from [LINE N] annotation>,",
+              "      \"code_snippet\": \"the actual code content from that line\",",
+              "      \"body\": \"🔴/🟠 **[P1/P2] Label**\\n\\n실패 경로, 원인, 수정 방향 (한국어, 마크다운)\"",
+              "    }",
+              "  ]",
+              "}",
+              "If no issues are found, return {\"summary\": \"...\", \"comments\": []}.",
+              "",
+              "<annotated_diff>",
+              annotated_diff,
+              "</annotated_diff>"
+            ];
+            const prompt = promptLines.join("\n");
+            let lastFailure = "unknown";
+            for (let attempt = 0; attempt < 2; attempt++) {
+              const boundedPrompt = attempt === 0
+                ? prompt
+                : `${prompt}\nReturn at most two comments. Keep each body under 300 characters and the summary under 300 characters. Do not include suggestion blocks.`;
+              let result;
+              for (let requestAttempt = 0; requestAttempt < 3; requestAttempt++) {
+                try {
+                  result = await model.generateContent(boundedPrompt);
+                  break;
+                } catch (error) {
+                  const status = Number(error.status);
+                  const dailyQuotaExceeded = status === 429 && error.errorDetails?.some((detail) =>
+                    detail.violations?.some((violation) =>
+                      violation.quotaMetric?.endsWith("/generate_content_free_tier_requests")
+                    )
+                  );
+                  if (dailyQuotaExceeded) {
+                    const headSHA = context.payload.pull_request.head.sha;
+                    core.setOutput("review_unavailable", "true");
+                    core.warning(`Gemini daily quota exhausted; review unavailable for ${headSHA}`);
+                    await core.summary.addRaw(`Gemini 리뷰 미완료: 일일 요청 한도 초과 (${headSHA}). 이 커밋의 Gemini 리뷰는 게시되지 않았습니다.`).write();
+                    return;
+                  }
+                  if (![429, 500, 502, 503, 504].includes(status) || requestAttempt === 2) {
+                    throw error;
+                  }
+                  const delayMs = 1000 * (requestAttempt + 1);
+                  console.log(`Gemini transient HTTP ${status}; retrying request ${requestAttempt + 2}/3 after ${delayMs}ms`);
+                  await new Promise(resolve => setTimeout(resolve, delayMs));
+                }
+              }
+              const finishReason = result.response.candidates?.[0]?.finishReason || "unknown";
+              const outputTokens = result.response.usageMetadata?.candidatesTokenCount ?? "unknown";
+              const thoughtTokens = result.response.usageMetadata?.thoughtsTokenCount ?? "unknown";
+              const totalTokens = result.response.usageMetadata?.totalTokenCount ?? "unknown";
+              let generatedText = "";
+              try {
+                generatedText = result.response.text();
+                const parsed = JSON.parse(generatedText);
+                if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)
+                  || !Array.isArray(parsed.comments)) {
+                  throw new Error("missing review object or comments array");
+                }
+                fs.writeFileSync("review_result.json", JSON.stringify(parsed));
+                console.log(`Gemini review JSON valid: finish=${finishReason}, outputTokens=${outputTokens}, thoughtTokens=${thoughtTokens}, totalTokens=${totalTokens}, chars=${generatedText.length}, attempt=${attempt + 1}`);
+                return;
+              } catch (error) {
+                lastFailure = `finish=${finishReason}, outputTokens=${outputTokens}, thoughtTokens=${thoughtTokens}, totalTokens=${totalTokens}, chars=${generatedText.length}, error=${error.message}`;
+                console.log(`Gemini review JSON invalid on attempt ${attempt + 1}: ${lastFailure}`);
+              }
+            }
+            throw new Error(`Gemini did not produce valid review JSON after two attempts: ${lastFailure}`);
+
+      - name: Post Inline Review Comments
+        if: steps.get_diff.outputs.skip_review == 'false' && steps.existing_review.outputs.already_reviewed != 'true' && steps.gemini_review.outputs.review_unavailable != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const raw = fs.readFileSync("review_result.json", "utf8");
+            const validLinesMap = JSON.parse(fs.readFileSync("valid_lines.json", "utf8"));
+            const lineContentMap = JSON.parse(fs.readFileSync("line_content_map.json", "utf8"));
+            let review;
+            try {
+              review = JSON.parse(raw);
+            } catch (e) {
+              throw new Error(`Gemini returned invalid JSON: ${e.message}`);
+            }
+
+            if (!review || typeof review !== "object" || Array.isArray(review)
+              || !Array.isArray(review.comments)) {
+              throw new Error("Gemini review must be an object with a comments array");
+            }
+
+            // Never relocate an invalid line: that can attach a finding to unrelated code.
+            const unverified = [];
+            const validComments = review.comments.filter((c) => {
+              const valid = c && typeof c.path === "string"
+                && Number.isInteger(c.line)
+                && validLinesMap[c.path]?.includes(c.line)
+                && typeof c.code_snippet === "string"
+                && c.code_snippet.trim().length > 0
+                && lineContentMap[c.path]?.[c.line] === c.code_snippet
+                && typeof c.body === "string"
+                && /\[P[12]\]/.test(c.body);
+              if (!valid && c && /\[P[12]\]/.test(String(c.body || ""))) {
+                unverified.push(`- ${String(c.path || "unknown")}:${String(c.line || "?")} [미검증] ${String(c.body).replace(/\s+/g, " ").slice(0, 240)}`);
+              }
+              return valid;
+            });
+            const seen = new Set();
+            const distinct = validComments.filter((c) => {
+              const key = `${c.path}:${c.line}:${c.body}`;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+            const inlineLimit = 5;
+            const reviewComments = distinct.slice(0, inlineLimit).map((c) => ({
+              path: c.path,
+              line: c.line,
+              side: "RIGHT",
+              body: c.body,
+            }));
+            const overflow = distinct.slice(inlineLimit);
+            const extraFindings = [
+              ...overflow.map((c) => `- ${c.path}:${c.line} ${c.body.replace(/\s+/g, " ").slice(0, 240)}`),
+              ...new Set(unverified),
+            ];
+            const overflowSummary = extraFindings.length
+              ? "\n\n추가 확인 사항 (미검증 항목은 인라인 미게시):\n"
+                + extraFindings.join("\n")
+              : "";
+            const headSHA = context.payload.pull_request.head.sha;
+            const markerPrefix = `<!-- gemini-code-review head=${headSHA} inline=`;
+            const marker = `${markerPrefix}${reviewComments.length} -->`;
+            const body = `${String(review.summary || "확인된 P1/P2 문제 없음.")}${overflowSummary}\n\n${marker}`;
+            const request = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            };
+
+            async function persistedReview() {
+              const reviews = await github.paginate(github.rest.pulls.listReviews, { ...request, per_page: 100 });
+              const marked = reviews
+                .filter((item) => item.user?.login === "github-actions[bot]")
+                .map((item) => ({
+                  item,
+                  match: item.body?.match(/<!-- gemini-code-review head=([0-9a-f]+) inline=(\d+) -->\s*$/),
+                }))
+                .find(({ match }) => match?.[1] === headSHA);
+              if (marked) {
+                const expected = Number(marked.match[2]);
+                let actual;
+                try {
+                  const comments = await github.paginate(
+                    "GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/comments",
+                    { ...request, review_id: marked.item.id, per_page: 100 }
+                  );
+                  actual = comments.length;
+                } catch (error) {
+                  if (error.status !== 404) throw error;
+                  console.log(`Review ${marked.item.id} comments are not visible yet (404)`);
+                  return "incomplete";
+                }
+                if (actual !== expected) {
+                  console.log(`Review ${marked.item.id} has ${actual}/${expected} inline comments for ${headSHA}`);
+                  // Deleting a bot comment makes this mismatch permanent until a new head SHA.
+                }
+                return Number.isInteger(expected) && actual === expected ? "complete" : "incomplete";
+              }
+
+              // Reviews posted before the marker was introduced still count for this head.
+              // Older summary-only issues.createComment posts have no SHA receipt and
+              // cannot be safely attributed to this head; only PR reviews expose commit_id.
+              const legacy = reviews.find((item) => item.commit_id === headSHA
+                && item.user?.login === "github-actions[bot]"
+                && !item.body?.includes("<!-- gemini-code-review head="));
+              if (legacy) console.log(`Found legacy review ${legacy.id} for ${headSHA}`);
+              return legacy ? "complete" : "missing";
+            }
+
+            const prior = await persistedReview();
+            if (prior === "complete") {
+              console.log(`Review for ${headSHA} is already persisted; skipping duplicate post.`);
+              return;
+            }
+            if (prior === "incomplete") {
+              // Never repost when a marked review exists. Allow bounded read-back
+              // for delayed comment visibility, then keep the job failed if incomplete.
+              for (let attempt = 1; attempt < 8; attempt++) {
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                if (await persistedReview() === "complete") return;
+              }
+              throw new Error(`Incomplete persisted review for ${headSHA}`);
+            }
+
+            let postError;
+            try {
+              await github.rest.pulls.createReview({
+                ...request,
+                event: "COMMENT",
+                commit_id: headSHA,
+                body,
+                comments: reviewComments,
+              });
+            } catch (error) {
+              postError = error;
+              console.log(`Review POST returned ${error.status || error.message}; checking GitHub state.`);
+            }
+
+            // A 5xx may arrive after GitHub has saved the review. Read back before failing.
+            let finalState = "missing";
+            for (let attempt = 0; attempt < 8; attempt++) {
+              if (attempt) await new Promise((resolve) => setTimeout(resolve, 2000));
+              try {
+                finalState = await persistedReview();
+                if (finalState === "complete") return;
+              } catch (error) {
+                console.log(`Read-back attempt ${attempt + 1} failed: ${error.message}`);
+              }
+            }
+            if (finalState === "incomplete") throw new Error(`Incomplete persisted review for ${headSHA}`);
+            throw postError || new Error(`Review for ${headSHA} was not found after POST`);
