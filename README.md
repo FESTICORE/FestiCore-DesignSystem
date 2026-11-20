@@ -49,12 +49,31 @@ Text("축제")
 
 Figma에서 값을 고친 뒤 이 저장소의 JSON을 갱신하고 생성물을 함께 제출한다. 이후 iOS 저장소의 별도 동기화 워크플로가 커밋 SHA에 묶인 파일을 가져와 PR을 만든다.
 
+## Android 토큰 생성
+
+`npm run build`는 iOS와 함께 `generated/android/tokens/`에 Kotlin 3개(`FestiCoreSemanticColor.kt` · `FestiCoreLayout.kt` · `FestiCoreTypography.kt`, 패키지 `io.festicore.ui.designkit.tokens`)를 만든다. iOS와 같은 검증(`loadValidatedTokens`)을 거친 토큰을 쓰고, 공개 이름도 iOS와 같다. `npm run check`는 두 생성물 모두 커밋본과 비교한다.
+
+- 색: `FestiCoreSemanticColor.labelNormal.color`가 시스템 다크 모드에 따라 light/dark 값을 돌려준다. hex `#RRGGBBAA`는 `Color(0xAARRGGBB)`로 바뀐다.
+- 레이아웃: `FestiCoreSpacing` · `FestiCoreRadius`(`Dp`), `FestiCoreState.disabledOpacity`.
+- 타이포그래피: `FestiCoreTextStyle` 37개. `lineHeight`는 배수 × fontSize(sp), `letterSpacing`은 em 그대로다. 서체(Pretendard)는 FestiCore-Android `ui/designkit`이 리소스로 등록한다.
+
+```kotlin
+Text(
+    text = "축제",
+    color = FestiCoreSemanticColor.labelNormal.color,
+    style = FestiCoreTextStyle.baseBodyBold.textStyle, // ui/designkit의 확장
+)
+```
+
+FestiCore-Android의 `design-token-sync` 워크플로(또는 `gradle/sync-design-tokens`)가 커밋 SHA에 묶인 파일을 `ui/designkit`으로 가져온다.
+
 ## 변경 이력
 
 상세 변경 내용은 [CHANGELOG.md](CHANGELOG.md)에서도 확인할 수 있다.
 
 | 날짜 | 버전 | 내용 |
 | --- | --- | --- |
+| 2026-11-20 | Android 토큰 | semantic 색 · spacing · radius · disabled opacity · typography를 Kotlin(Compose)으로 생성. iOS와 같은 검증 · 이름, `npm run build` · `check`에 포함 |
 | 2026-10-27 | Pretendard case 명명 | `FestiCoreTextStyle.fontFamily`의 `.Regular`·`.Medium`·`.Bold`를 Attendance 표기와 통일 |
 | 2026-10-27 | Pretendard 타이포그래피 | point 서체를 Pretendard로 통일하고, iOS 텍스트 스타일을 enum case API로 변경 |
 | 2026-10-23 | Semantic 색 API | Joongna의 `.color`·`.uiColor` 사용 형태를 참고해 코드형 hex Light/Dark 색을 단일 타입으로 생성. ShapeStyle은 같은 동적 색 사용 |

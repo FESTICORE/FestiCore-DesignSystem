@@ -1,5 +1,11 @@
 # 변경 이력
 
+## 2026-11-20 — Android 토큰 생성
+
+- `scripts/build-android.ts`가 `generated/android/tokens/`에 `FestiCoreSemanticColor.kt` · `FestiCoreLayout.kt` · `FestiCoreTypography.kt`를 만듭니다(패키지 `io.festicore.ui.designkit.tokens`).
+- iOS 생성기의 토큰 로딩 · 검증을 `loadValidatedTokens`로 분리해 두 생성기가 함께 씁니다. iOS 생성물은 바뀌지 않습니다.
+- `npm run build` · `npm run check`가 iOS와 Android를 함께 생성 · 비교합니다.
+
 ## 2026-10-27 — Pretendard 서체 case 명명 통일
 
 - 생성된 `FestiCoreTextStyle.fontFamily`가 Attendance와 같은 대문자 `PretendardFontFamily` case(`.Regular`, `.Medium`, `.Bold`)를 반환합니다.

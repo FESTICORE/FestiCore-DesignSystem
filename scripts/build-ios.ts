@@ -16,7 +16,7 @@ type Theme = {
 };
 type SwiftOutputs = Map<string, string>;
 
-function fail(message) { throw new Error(message); }
+export function fail(message) { throw new Error(message); }
 function parseUniqueJSON(file) {
   const source = fs.readFileSync(file, 'utf8');
   let offset = 0;
@@ -149,7 +149,7 @@ function samePathsAndValues(light, dark, group) {
   if (group !== 'color') for (const name of a) if (JSON.stringify(light.resolved.get(name)) !== JSON.stringify(dark.resolved.get(name))) fail(`${group} value differs: ${name}`);
   return a;
 }
-function swiftName(name, prefix) {
+export function swiftName(name, prefix) {
   const parts = name.slice(prefix.length + 1).split('.');
   return parts.map((part, index) => {
     const words = part.split('-');
@@ -164,15 +164,15 @@ function assertNames(names, group, prefix) {
     seen.add(swift);
   }
 }
-function number(value, label) {
+export function number(value, label) {
   if (typeof value !== 'number' || !Number.isFinite(value)) fail(`Invalid number: ${label}`);
   return value;
 }
-function dimension(value, label) {
+export function dimension(value, label) {
   if (typeof value !== 'string' || !/^-?\d+(?:\.\d+)?px$/.test(value)) fail(`Invalid px dimension: ${label}`);
   return number(Number(value.slice(0, -2)), label);
 }
-function format(value) { return Number(value.toFixed(10)).toString(); }
+export function format(value) { return Number(value.toFixed(10)).toString(); }
 function hexColor(value, label) {
   if (typeof value !== 'string' || !/^#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?$/.test(value)) fail(`Invalid hex color: ${label}`);
   const hex = value.slice(1).toUpperCase();
@@ -305,7 +305,8 @@ function generateTypography(light, names, outputs) {
   lines.push('}', '');
   collectOutput(outputs, 'Sources/FestiCoreTypography.swift', lines.join('\n'));
 }
-export async function buildIOS() {
+// iOS · Android 생성기가 같은 검증을 거친 토큰을 쓴다.
+export async function loadValidatedTokens() {
   if (process.env.FESTICORE_OUTPUT_ROOT) fail('FESTICORE_OUTPUT_ROOT is not supported');
   const light = loadTheme('light'), dark = loadTheme('dark');
   // 테마별 DTCG 별칭 해석 결과를 Style Dictionary와 대조한다.
@@ -328,6 +329,10 @@ export async function buildIOS() {
   for (const [group, names] of [['color',colors],['spacing',spacing],['radius',radius],['text-style',typography]]) assertNames(names, group, group);
   const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'tests/fixtures/public-color-names.json'), 'utf8'));
   if (JSON.stringify(colors.map(name => swiftName(name, 'color')).sort()) !== JSON.stringify(snapshot)) fail('Public color names differ from iOS API snapshot');
+  return { light, dark, colors, spacing, radius, typography };
+}
+export async function buildIOS() {
+  const { light, dark, colors, spacing, radius, typography } = await loadValidatedTokens();
   const outputs = new Map();
   generateColors(light, dark, colors, outputs);
   generateLayout(light, spacing, radius, light.resolved.get('state.disabled'), outputs);
